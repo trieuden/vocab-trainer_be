@@ -7,10 +7,9 @@ import {
   UpdateDateColumn,
   JoinColumn,
   OneToMany,
-  OneToOne,
   ManyToOne,
 } from 'typeorm';
-import { Role, AuditLog, Library } from 'src/entities';
+import { Role, AuditLog } from 'src/entities';
 import { UserLibrary } from './user-library.entity';
 
 @Entity('users')
@@ -28,16 +27,16 @@ export class User {
   name: string;
 
   @Column({ type: 'text', nullable: true })
-  avatar: string;
+  avatar?: string;
 
   @Column({ enum: Gender, type: 'enum', nullable: true, default: Gender.OTHER })
-  gender: Gender;
+  gender?: Gender;
 
   @Column({ type: 'varchar', length: 100, unique: true, nullable: false })
   email: string;
 
   @Column({ enum: UserStatus, type: 'enum', default: UserStatus.ACTIVE })
-  status: UserStatus;
+  status?: UserStatus;
 
   @CreateDateColumn({ type: 'timestamp', default: () => 'CURRENT_TIMESTAMP' })
   createdAt: Date;
@@ -56,6 +55,6 @@ export class User {
   @OneToMany(() => AuditLog, (auditLog) => auditLog.user)
   auditLogs?: AuditLog[];
 
-  @OneToMany(()=> UserLibrary, (library) => library.user)
+  @OneToMany(() => UserLibrary, (library) => library.user)
   userLibrary?: UserLibrary[];
 }

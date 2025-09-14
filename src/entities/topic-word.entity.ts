@@ -1,4 +1,4 @@
-import { PrimaryGeneratedColumn, JoinColumn, OneToOne, Entity, ManyToOne } from 'typeorm';
+import { PrimaryGeneratedColumn, JoinColumn, Entity, ManyToOne } from 'typeorm';
 import { Topic, Word } from 'src/entities';
 
 @Entity('topic_words')

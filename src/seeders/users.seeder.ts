@@ -32,7 +32,7 @@ export class UserSeeder {
         avatar: 'https://i.pravatar.cc/150?img=1',
         gender: Gender.MALE,
         status: UserStatus.ACTIVE,
-        role: roles.find(role => role.role_name === 'admin'),
+        role: roles.find((role) => role.role_name === 'admin'),
       },
     ]);
   }

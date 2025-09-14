@@ -1,5 +1,11 @@
 import { TopicStatus } from 'libs/shared/enums/topic.enum';
-import { PrimaryGeneratedColumn, Column, Entity, ManyToOne, OneToMany } from 'typeorm';
+import {
+  PrimaryGeneratedColumn,
+  Column,
+  Entity,
+  ManyToOne,
+  OneToMany,
+} from 'typeorm';
 import { TopicWord } from './topic-word.entity';
 
 @Entity('topics')

@@ -26,19 +26,19 @@ export class EntrySeeder {
         word_type: WordType.NOUN,
         vietnamese: 'Xin chào',
         example: 'Hello, how are you?',
-        word: words.find(word => word.word === 'hello'),
+        word: words.find((word) => word.word === 'hello'),
       },
       {
         word_type: WordType.NOUN,
         vietnamese: 'Lượt chơi / sự chơi',
         example: 'He says hello to everyone.',
-        word: words.find(word => word.word === 'play'),
+        word: words.find((word) => word.word === 'play'),
       },
       {
         word_type: WordType.VERB,
         vietnamese: 'Chơi',
         example: 'They play football every weekend.',
-        word: words.find(word => word.word === 'play'),
+        word: words.find((word) => word.word === 'play'),
       },
     ];
 

@@ -18,7 +18,7 @@ export class Word {
   @Column({ type: 'varchar', length: 255, unique: true, nullable: false })
   word: string;
 
-  @Column({enum: CEFRLevel, type: 'enum', nullable: false})
+  @Column({ enum: CEFRLevel, type: 'enum', nullable: false })
   CEFR_Level: CEFRLevel;
 
   @Column({ type: 'varchar', length: 50, nullable: true })

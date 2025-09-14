@@ -1,55 +1,99 @@
 import { ApiProperty } from '@nestjs/swagger';
-import { Column } from 'typeorm';
-import { Gender, UserStatus } from '../enums/user.enum';
-import { IsEnum } from 'class-validator';
+import { Gender } from '../enums/user.enum';
+import { IsEmail, IsNotEmpty, IsOptional, Length, Matches } from 'class-validator';
 
 export class CreateUserDto {
   @ApiProperty({
     description: 'Tên đăng nhập của người dùng',
     example: 'user123',
   })
-  @Column({ type: 'varchar', length: 255, nullable: false })
+  @IsNotEmpty({ message: 'Username is required.' })
+  @Length(3, 50, {
+    message: 'Username must be between 3 and 50 characters long.',
+  })
   username: string;
 
   @ApiProperty({
     description: 'Mật khẩu của người dùng',
-    example: 'password123',
+    example: 'Trieu123',
   })
-  @Column({ type: 'varchar', length: 255, nullable: false })
+  @IsNotEmpty({ message: 'Password is required.' })
+  @Length(6, 100)
+  @Matches(/^(?=.*[a-z])(?=.*[A-Z])(?=.*\d).+$/, {
+    message:
+      'Password must contain at least one uppercase letter, one lowercase letter, and one number.',
+  })
   password: string;
 
+  @IsNotEmpty({ message: 'Name is required.' })
+  @Length(3, 100)
   @ApiProperty({
     description: 'Tên của người dùng',
     example: 'Huỳnh Ngọc A',
   })
-  @Column({ type: 'varchar', length: 100, nullable: false })
   name: string;
 
+  @IsOptional()
+  @ApiProperty({
+    description: 'Ảnh đại diện của người dùng',
+    example: 'https://example.com/avatar.jpg',
+    required: false,
+  })
+  avatar: string;
+
+  @IsNotEmpty({ message: 'Role ID is required.' })
   @ApiProperty({
     description: 'Vai trò của người dùng',
     example: 'admin',
   })
-  @Column({ type: 'varchar', length: 50, nullable: false })
   roleId: string;
 
+  @IsOptional()
   @ApiProperty({
     description: 'Giới tính của người dùng',
     example: 'MALE',
+    required: false,
   })
-  @IsEnum(Gender)
   gender: Gender;
 
+  @IsNotEmpty({ message: 'Email is required.' })
+  @IsEmail({}, { message: 'Email must be a valid email address.' })
   @ApiProperty({
     description: 'Email của người dùng',
     example: 'abc@gmail.com',
   })
-  @Column({ type: 'varchar', length: 100, unique: true, nullable: false })
   email: string;
 
+}
+
+export class UpdateUserDto {
   @ApiProperty({
-    description: 'Trạng thái của người dùng',
-    example: 'ACTIVE',
+    description: 'Mật khẩu của người dùng',
+    example: 'password123',
+    required: false,
   })
-  @IsEnum(UserStatus)
-  status: UserStatus;
+  @IsOptional()
+  @Length(6, 100)
+  @Matches(/^(?=.*[a-z])(?=.*[A-Z])(?=.*\d).+$/, {
+    message:
+      'Password must contain at least one uppercase letter, one lowercase letter, and one number.',
+  })
+  password: string;
+
+  @IsOptional()
+  @Length(3, 100)
+  @ApiProperty({
+    description: 'Tên của người dùng',
+    example: 'Huỳnh Ngọc A',
+    required: false,
+  })
+  name: string;
+
+  @IsOptional()
+  @ApiProperty({
+    description: 'Giới tính của người dùng',
+    example: 'MALE',
+    required: false,
+  })
+  gender: Gender;
 }

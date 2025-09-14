@@ -36,4 +36,11 @@ export class CreateWordDto {
   pronunciation_us: string;
 }
 
-
+export class UpdateWordDto {
+  @ApiProperty({
+    required: true,
+    example: 'Road',
+  })
+  @Column({ type: 'varchar', length: 255, unique: true, nullable: false })
+  word: string;
+}

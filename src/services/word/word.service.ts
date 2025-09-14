@@ -1,22 +1,25 @@
 import { Injectable } from '@nestjs/common';
-import { InjectRepository } from '@nestjs/typeorm';
-import { Word } from 'src/entities';
-import { Repository } from 'typeorm';
-
+import { WordRepository } from '@/repositories/word.repository';
+import { Word } from '@/entities';
+import { CreateWordDto, UpdateWordDto } from '@/shared/dtos/word.dto';
 @Injectable()
 export class WordService {
-  constructor(
-    @InjectRepository(Word)
-    private readonly userRepository: Repository<Word>,
-  ) {}
+  constructor(private readonly wordRepository: WordRepository) {}
 
-  findAll(): Promise<Word[]> {
-    try {
-      return this.userRepository.find({
-        relations: ['entries'],
-      });
-    } catch (error) {
-      throw error;
-    }
+  async findAllWords(): Promise<Word[]> {
+    return this.wordRepository.findAllWords();
+  }
+
+  async findWordById(id: string): Promise<Word | null> {
+    return this.wordRepository.findById(id);
+  }
+  async createWord(word: CreateWordDto): Promise<Word> {
+    return this.wordRepository.createWord(word);
+  }
+  async updateWord(id: string, word: UpdateWordDto): Promise<Word> {
+    return this.wordRepository.updateWord(id, word);
+  }
+  async deleteWord(id: string): Promise<void> {
+    return this.wordRepository.deleteWord(id);
   }
 }

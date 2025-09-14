@@ -1,6 +1,5 @@
 import { Injectable } from '@nestjs/common';
-import { UserSeeder,WordSeeder, EntrySeeder, RoleSeeder } from '../../seeders';
-
+import { UserSeeder, WordSeeder, EntrySeeder, RoleSeeder } from '../../seeders';
 
 @Injectable()
 export class SeederService {
@@ -12,13 +11,11 @@ export class SeederService {
   ) {}
 
   async seedAll() {
-    
     try {
       await this.rolesSeeder.seed();
       await this.usersSeeder.seed();
       await this.wordsSeeder.seed();
       await this.entriesSeeder.seed();
-      
     } catch (error) {
       console.error('Error during seeding:', error);
       throw error;

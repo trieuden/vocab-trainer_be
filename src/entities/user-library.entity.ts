@@ -1,4 +1,11 @@
-import { Column, PrimaryGeneratedColumn, OneToOne, JoinColumn, Entity, ManyToOne } from "typeorm";
+import {
+  Column,
+  PrimaryGeneratedColumn,
+  OneToOne,
+  JoinColumn,
+  Entity,
+  ManyToOne,
+} from 'typeorm';
 import { User, Library } from 'src/entities';
 
 @Entity('user_libraries')
