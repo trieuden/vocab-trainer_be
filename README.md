@@ -1,98 +1,105 @@
-<p align="center">
-  <a href="http://nestjs.com/" target="blank"><img src="https://nestjs.com/img/logo-small.svg" width="120" alt="Nest Logo" /></a>
-</p>
+# Vocab Trainer - Backend
+### Backend cho ứng dụng học từ vựng tiếng Anh, được xây dựng bằng NestJS.
 
-[circleci-image]: https://img.shields.io/circleci/build/github/nestjs/nest/master?token=abc123def456
-[circleci-url]: https://circleci.com/gh/nestjs/nest
+## Mô tả
+Đây là một dự án backend được xây dựng bằng NestJS, cung cấp các API cần thiết cho ứng dụng web học từ vựng. Dự án này quản lý người dùng, các bộ từ vựng, các từ riêng lẻ và tiến độ học tập của người dùng.
 
-  <p align="center">A progressive <a href="http://nodejs.org" target="_blank">Node.js</a> framework for building efficient and scalable server-side applications.</p>
-    <p align="center">
-<a href="https://www.npmjs.com/~nestjscore" target="_blank"><img src="https://img.shields.io/npm/v/@nestjs/core.svg" alt="NPM Version" /></a>
-<a href="https://www.npmjs.com/~nestjscore" target="_blank"><img src="https://img.shields.io/npm/l/@nestjs/core.svg" alt="Package License" /></a>
-<a href="https://www.npmjs.com/~nestjscore" target="_blank"><img src="https://img.shields.io/npm/dm/@nestjs/common.svg" alt="NPM Downloads" /></a>
-<a href="https://circleci.com/gh/nestjs/nest" target="_blank"><img src="https://img.shields.io/circleci/build/github/nestjs/nest/master" alt="CircleCI" /></a>
-<a href="https://discord.gg/G7Qnnhy" target="_blank"><img src="https://img.shields.io/badge/discord-online-brightgreen.svg" alt="Discord"/></a>
-<a href="https://opencollective.com/nest#backer" target="_blank"><img src="https://opencollective.com/nest/backers/badge.svg" alt="Backers on Open Collective" /></a>
-<a href="https://opencollective.com/nest#sponsor" target="_blank"><img src="https://opencollective.com/nest/sponsors/badge.svg" alt="Sponsors on Open Collective" /></a>
-  <a href="https://paypal.me/kamilmysliwiec" target="_blank"><img src="https://img.shields.io/badge/Donate-PayPal-ff3f59.svg" alt="Donate us"/></a>
-    <a href="https://opencollective.com/nest#sponsor"  target="_blank"><img src="https://img.shields.io/badge/Support%20us-Open%20Collective-41B883.svg" alt="Support us"></a>
-  <a href="https://twitter.com/nestframework" target="_blank"><img src="https://img.shields.io/twitter/follow/nestframework.svg?style=social&label=Follow" alt="Follow us on Twitter"></a>
-</p>
-  <!--[![Backers on Open Collective](https://opencollective.com/nest/backers/badge.svg)](https://opencollective.com/nest#backer)
-  [![Sponsors on Open Collective](https://opencollective.com/nest/sponsors/badge.svg)](https://opencollective.com/nest#sponsor)-->
+## Tính năng
+- Xác thực người dùng: Đăng ký, đăng nhập bằng JWT (JSON Web Tokens).
 
-## Description
+- Quản lý từ vựng: Tạo, xem, cập nhật và xóa các bộ từ vựng (topics) và các từ.
 
-[Nest](https://github.com/nestjs/nest) framework TypeScript starter repository.
+- Học và ôn tập: API để lấy từ vựng cho các phiên học và theo dõi tiến độ của người dùng.
 
-## Project setup
+- Tìm kiếm: Tìm kiếm từ vựng và các bộ từ.
+
+## Công nghệ sử dụng
+- Framework: [NestJS](https://nestjs.com/)
+
+- Ngôn ngữ: [TypeScript](https://www.typescriptlang.org/)
+
+- Database: [PostgreSQL](https://www.postgresql.org/)
+
+- ORM: [TypeORM](https://typeorm.io/)
+
+- Xác thực: [Passport.js](https://www.passportjs.org/) với <mark> passport-jwt </mark>
+
+- Validation: <mark>class-validator</mark>, <mark>class-transformer</mark>
+
+## Cài đặt
+### Clone the repository:
+
+#### Bash
+
+```bash
+$ git clone https://github.com/trieuden/vocab-trainer_be.git
+```
+```bash
+$ cd vocab-trainer_be
+```
+### Cài đặt các dependencies:
+
+#### Bash
 
 ```bash
 $ npm install
 ```
+#### Cấu hình môi trường:
+- Sao chép file .env.example thành .env và cập nhật các biến môi trường, đặc biệt là thông tin kết nối database.
 
-## Compile and run the project
-
+#### Bash
 ```bash
-# development
-$ npm run start
+$ cp .env.example .env
+```
+## Chạy ứng dụng
+### Chạy ở chế độ development:
 
-# watch mode
+#### Bash
+```bash
 $ npm run start:dev
+```
+- Ứng dụng sẽ chạy tại http://localhost:3000.
 
-# production mode
+### Build ứng dụng:
+
+#### Bash
+```bash
+$ npm run build
+```
+### Chạy ở chế độ production:
+
+#### Bash
+```bash
 $ npm run start:prod
 ```
+----
+### API Endpoints
 
-## Run tests
+#### Authentication
++ POST /auth/register: Đăng ký người dùng mới.
 
-```bash
-# unit tests
-$ npm run test
++ POST /auth/login: Đăng nhập và nhận JWT.
 
-# e2e tests
-$ npm run test:e2e
+#### Users
++ GET /users/me: Lấy thông tin người dùng hiện tại (yêu cầu xác thực).
 
-# test coverage
-$ npm run test:cov
-```
+#### Words (Các từ vựng)
++ GET /words/: Lấy danh sách các từ trong một bộ.
 
-## Deployment
+... (Các endpoints khác cho việc cập nhật và xóa từ)
 
-When you're ready to deploy your NestJS application to production, there are some key steps you can take to ensure it runs as efficiently as possible. Check out the [deployment documentation](https://docs.nestjs.com/deployment) for more information.
+## Đóng góp
+#### Nếu bạn muốn đóng góp cho dự án, vui lòng tạo một Pull Request. Chúng tôi luôn hoan nghênh các ý kiến đóng góp để cải thiện sản phẩm.
 
-If you are looking for a cloud-based platform to deploy your NestJS application, check out [Mau](https://mau.nestjs.com), our official platform for deploying NestJS applications on AWS. Mau makes deployment straightforward and fast, requiring just a few simple steps:
+1. Fork a project
 
-```bash
-$ npm install -g @nestjs/mau
-$ mau deploy
-```
+2. Tạo một branch mới (git checkout -b feature/AmazingFeature)
 
-With Mau, you can deploy your application in just a few clicks, allowing you to focus on building features rather than managing infrastructure.
+3. Commit các thay đổi của bạn (git commit -m 'Add some AmazingFeature')</mark>
 
-## Resources
+4. Push lên branch (git push origin feature/AmazingFeature)
 
-Check out a few resources that may come in handy when working with NestJS:
+5. Mở một Pull Request
 
-- Visit the [NestJS Documentation](https://docs.nestjs.com) to learn more about the framework.
-- For questions and support, please visit our [Discord channel](https://discord.gg/G7Qnnhy).
-- To dive deeper and get more hands-on experience, check out our official video [courses](https://courses.nestjs.com/).
-- Deploy your application to AWS with the help of [NestJS Mau](https://mau.nestjs.com) in just a few clicks.
-- Visualize your application graph and interact with the NestJS application in real-time using [NestJS Devtools](https://devtools.nestjs.com).
-- Need help with your project (part-time to full-time)? Check out our official [enterprise support](https://enterprise.nestjs.com).
-- To stay in the loop and get updates, follow us on [X](https://x.com/nestframework) and [LinkedIn](https://linkedin.com/company/nestjs).
-- Looking for a job, or have a job to offer? Check out our official [Jobs board](https://jobs.nestjs.com).
-
-## Support
-
-Nest is an MIT-licensed open source project. It can grow thanks to the sponsors and support by the amazing backers. If you'd like to join them, please [read more here](https://docs.nestjs.com/support).
-
-## Stay in touch
-
-- Author - [Kamil Myśliwiec](https://twitter.com/kammysliwiec)
-- Website - [https://nestjs.com](https://nestjs.com/)
-- Twitter - [@nestframework](https://twitter.com/nestframework)
-
-## License
-
-Nest is [MIT licensed](https://github.com/nestjs/nest/blob/master/LICENSE).
+## Giấy phép
+#### Dự án này được cấp phép theo MIT License.
