@@ -54,3 +54,23 @@ export class RegisterDto {
   })
   email: string;
 }
+
+export class LoginDto {
+  @IsNotEmpty({ message: 'Username is required.' })
+  @Length(3, 50, {
+    message: 'Username must be between 3 and 50 characters long.',
+  })
+  @ApiProperty({
+    description: 'Tên đăng nhập của người dùng',
+    example: 'john_doe',
+  })
+  username: string;
+
+  @IsNotEmpty({ message: 'Password is required.' })
+  @Length(6, 100)
+  @ApiProperty({
+    description: 'Mật khẩu của người dùng',
+    example: '123456',
+  })
+  password: string;
+}

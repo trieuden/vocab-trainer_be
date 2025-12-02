@@ -1,6 +1,6 @@
 import { User } from '@/entities';
 import { AuthRepository } from '@/repositories/auth.repository';
-import { RegisterDto } from '@/shared/dtos/auth.dto';
+import { LoginDto, RegisterDto } from '@/shared/dtos/auth.dto';
 import { Injectable } from '@nestjs/common';
 
 @Injectable()
@@ -11,7 +11,7 @@ export class AuthService {
     return this.authRepository.register(registerDto);
   }
 
-  login(user: User): Promise<{ accessToken: string }> {
+  login(user: any): Promise<{ accessToken: string }> {
     return this.authRepository.login(user);
   }
 }

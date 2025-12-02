@@ -14,7 +14,7 @@ export class UserLibraryController {
     return this.userLibraryServices.getAllUserLibraries();
   }
 
-  @Get('/getUserLibraryById/:id')
+  @Get('/:id/id')
   @ApiOperation({ summary: 'Get user library by ID' })
   async getUserLibraryById(@Param('id') id: string) {
     return this.userLibraryServices.getUserLibraryById(id);

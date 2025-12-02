@@ -24,11 +24,19 @@ export class PermissionController {
     return this.permissionService.findPermissionById(id);
   }
 
-  @Get('/getPermissionByName/:permissionName')
+  @Get('/:permissionName/permissionName')
   @ApiOperation({
     summary: 'Get permission by name',
   })
   findByPermissionName(@Param('permissionName') permissionName: string): Promise<Permission | null> {
     return this.permissionService.findByPermissionName(permissionName);
+  }
+  
+  @Get('/activePermissions/:userId/userId')
+  @ApiOperation({
+    summary: 'Get permission active for user',
+  })
+  findActivePermissionsByUserId(@Param('userId') userId: string): Promise<Permission[]> {
+    return this.permissionService.findActivePermissionsByUserId(userId);
   }
 }

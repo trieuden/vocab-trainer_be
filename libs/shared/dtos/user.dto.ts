@@ -1,7 +1,7 @@
 import { ApiProperty } from '@nestjs/swagger';
 import { Gender } from '../enums/user.enum';
-import { IsEmail, IsNotEmpty, IsOptional, Length, Matches } from 'class-validator';
-
+import { IsBoolean, IsEmail, IsNotEmpty, IsOptional, Length, Matches } from 'class-validator';
+import { Transform } from 'class-transformer';
 export class CreateUserDto {
   @ApiProperty({
     description: 'Tên đăng nhập của người dùng',
@@ -36,10 +36,11 @@ export class CreateUserDto {
   @IsOptional()
   @ApiProperty({
     description: 'Ảnh đại diện của người dùng',
-    example: 'https://example.com/avatar.jpg',
+    type: 'string',
+    format: 'binary',
     required: false,
   })
-  avatar: string;
+  avatar?: Express.Multer.File
 
   @IsNotEmpty({ message: 'Role ID is required.' })
   @ApiProperty({
@@ -48,13 +49,27 @@ export class CreateUserDto {
   })
   roleId: string;
 
-  @IsOptional()
+  @IsNotEmpty()
   @ApiProperty({
     description: 'Giới tính của người dùng',
     example: 'MALE',
-    required: false,
   })
   gender: Gender;
+
+  @IsNotEmpty()
+  @ApiProperty({
+    description: 'Ngày sinh của người dùng',
+    example: '2000-01-01',
+  })
+  birthDate: Date;
+
+  @IsOptional()
+  @ApiProperty({
+    description: 'Số điện thoại của người dùng',
+    example: '0909090909',
+    required: false,
+  })
+  phoneNumber: string;
 
   @IsNotEmpty({ message: 'Email is required.' })
   @IsEmail({}, { message: 'Email must be a valid email address.' })
@@ -91,9 +106,44 @@ export class UpdateUserDto {
 
   @IsOptional()
   @ApiProperty({
+    description: 'Ảnh đại diện của người dùng',
+    type: 'string',
+    format: 'binary',
+    required: false,
+  })
+  avatar: Express.Multer.File
+
+  @IsOptional()
+  @ApiProperty({
     description: 'Giới tính của người dùng',
     example: 'MALE',
     required: false,
   })
   gender: Gender;
+
+  @IsOptional()
+  @ApiProperty({
+    description: 'Ngày sinh của người dùng',
+    example: '2000-01-01',
+    required: false,
+  })
+  birthDate?: Date;
+
+  @IsOptional()
+  @ApiProperty({
+    description: 'Số điện thoại của người dùng',
+    example: '0909090909',
+    required: false,
+  })
+  phoneNumber: string;
+
+  @IsOptional()
+  @IsBoolean()
+  @Transform(({ value }) => value === 'true' || value === true)
+  @ApiProperty({
+    description:'is delete Avatar',
+    default: false,
+    required:false
+  })
+  isDeleteAvatar?: boolean
 }

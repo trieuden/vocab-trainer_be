@@ -5,7 +5,7 @@ import { BadRequestException } from '@nestjs/common/exceptions/bad-request.excep
 import { UserRepository, RoleRepository } from '@/repositories';
 import { hashPassword } from '@/core/utils/password.utils';
 import { Gender } from '@/shared/enums/user.enum';
-import { RegisterDto } from '@/shared/dtos/auth.dto';
+import { LoginDto, RegisterDto } from '@/shared/dtos/auth.dto';
 import { JwtService } from '@nestjs/jwt';
 import { InjectDataSource } from '@nestjs/typeorm';
 
@@ -64,7 +64,7 @@ export class AuthRepository extends Repository<User> {
     }
   }
 
-  async login(user: User): Promise<{ accessToken: string; refreshToken: string }> {
+  async login(user: any): Promise<{ accessToken: string; refreshToken: string }> {
     const payload = { username: user.username, sub: user.id };
     const accessToken = this.jwtService.sign(payload, {
       secret: process.env.JWT_SECRET || 'default_secret_key',

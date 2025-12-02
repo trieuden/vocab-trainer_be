@@ -1,11 +1,11 @@
 import { TopicWordRepository } from './topic-word.repository';
 import { DataSource, Repository } from 'typeorm';
 import { Topic, TopicWord } from '@/entities';
-import { CreateTopic, UpdateTopic } from '@/shared/dtos/topic.dto';
 import { TopicStatus } from '@/shared/enums/topic.enum';
 import { InjectDataSource, InjectRepository } from '@nestjs/typeorm';
 import { Injectable } from '@nestjs/common';
 import { Inject } from '@nestjs/common';
+import { CreateTopicDto, UpdateTopicDto } from '@/shared/dtos/topic.dto';
 
 @Injectable()
 export class TopicRepository extends Repository<Topic> {
@@ -21,7 +21,7 @@ export class TopicRepository extends Repository<Topic> {
   async findAllTopics(): Promise<Topic[]> {
     return this.find();
   }
-  async createTopic(topic: CreateTopic): Promise<Topic> {
+  async createTopic(topic: CreateTopicDto): Promise<Topic> {
     const newTopic = this.create();
     newTopic.topicName = topic.topic_name;
     newTopic.description = topic.description;
@@ -38,7 +38,7 @@ export class TopicRepository extends Repository<Topic> {
     return this.save(newTopic);
   }
 
-  async updateTopic(id: string, topic: UpdateTopic): Promise<Topic> {
+  async updateTopic(id: string, topic: UpdateTopicDto): Promise<Topic> {
     const existingTopic = await this.findById(id);
     if (!existingTopic) {
       throw new Error('Topic not found');

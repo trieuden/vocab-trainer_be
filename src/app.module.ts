@@ -1,4 +1,8 @@
+
 import { Module } from '@nestjs/common';
+import { ConfigModule } from '@nestjs/config';
+import { APP_INTERCEPTOR } from '@nestjs/core';
+import { LastActiveInterceptor } from './common/interceptors/last-active.interceptor';
 import {
   WordModule,
   UserModule,
@@ -14,11 +18,18 @@ import {
   TopicModule,
   UserLibraryModule,
   AuthModule,
+  CloudinaryModule,
+  UserPermissionModule,
 } from './modules';
 import { TypeOrmModule } from '@nestjs/typeorm';
+import { UserPermissionService } from './services/user-permission/user-permission.service';
+import { UserPermissionController } from './controllers/user-permission/user-permission.controller';
 
 @Module({
   imports: [
+    ConfigModule.forRoot({
+      isGlobal: true,
+    }),
     TypeOrmModule.forRoot({
       type: 'postgres',
       host: process.env.DB_HOST || 'localhost',
@@ -30,6 +41,8 @@ import { TypeOrmModule } from '@nestjs/typeorm';
       synchronize: true,
       logging: true,
     }),
+    AuthModule,
+    CloudinaryModule,
     ActionTypeModule,
     AuditLogModule,
     EntryModule,
@@ -43,9 +56,12 @@ import { TypeOrmModule } from '@nestjs/typeorm';
     UserLibraryModule,
     UserModule,
     WordModule,
-    AuthModule,
+    UserPermissionModule
   ],
-  controllers: [],
-  providers: [],
+  controllers: [UserPermissionController],
+  providers: [{
+    provide: APP_INTERCEPTOR,
+    useClass: LastActiveInterceptor,
+  }, UserPermissionService],
 })
 export class AppModule {}

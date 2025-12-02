@@ -17,7 +17,7 @@ export class RolePermissionController {
     return this.rolePermissionService.findAll();
   }
 
-  @Get('/getByRoleId/:roleId')
+  @Get('/:roleId/roleId')
   @ApiOperation({
     summary: 'Get role-permissions by Role ID',
   })
@@ -25,7 +25,7 @@ export class RolePermissionController {
     return this.rolePermissionService.findByRoleId(roleId);
   }
 
-  @Get('/getById/:id')
+  @Get('/:id/id')
   @ApiOperation({
     summary: 'Get role-permission by ID',
   })

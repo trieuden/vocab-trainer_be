@@ -2,20 +2,29 @@ import { Strategy, ExtractJwt } from 'passport-jwt';
 import { Injectable } from '@nestjs/common';
 import { PassportStrategy } from '@nestjs/passport';
 import { UserService } from '@/services/user/users.service';
+import { ConfigService } from '@nestjs/config';
+
+export interface JwtPayload {
+  username: string;
+  sub: string;
+}
 
 @Injectable()
-export class JwtStrategy extends PassportStrategy(Strategy) {
-  constructor(private readonly userService: UserService) {
+export class JwtStrategy extends PassportStrategy(Strategy, 'jwt') {
+  constructor(
+    private readonly configService: ConfigService,
+    private readonly userService: UserService,
+  ) {
     super({
       jwtFromRequest: ExtractJwt.fromAuthHeaderAsBearerToken(),
       ignoreExpiration: false,
-      secretOrKey: process.env.JWT_SECRET || 'a33a86b54075c68f89ee848dde0339317a136d2e6800eaee85883716db25f05d',
+      secretOrKey: configService.get('JWT_SECRET'),
     });
   }
 
-  async validate(payload: any) {
-    const username = payload.username;
-    const user = await this.userService.findByUsername(username);
+  async validate(payload: JwtPayload): Promise<any> {
+    // Lấy thông tin user đầy đủ từ database
+    const user = await this.userService.findById(payload.sub);
     return user;
   }
 }

@@ -4,9 +4,10 @@ import { ActionType } from 'src/entities';
 import { ActionTypeController } from '@/controllers/action-type/action-type.controller';
 import { ActionTypeService } from '@/services/action-type/action-type.service';
 import { ActionTypeRepository } from '@/repositories/action-type.repository';
+import { UserPermissionModule } from './user-permission.module';
 
 @Module({
-  imports: [TypeOrmModule.forFeature([ActionType])],
+  imports: [TypeOrmModule.forFeature([ActionType]), UserPermissionModule],
   providers: [ActionTypeService, ActionTypeRepository],
   controllers: [ActionTypeController],
   exports: [ActionTypeService, ActionTypeRepository],

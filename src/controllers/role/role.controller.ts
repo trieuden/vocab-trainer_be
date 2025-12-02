@@ -5,7 +5,7 @@ import { Role } from '@/entities';
 import { CreateRoleDto } from '@/shared/dtos/role.dto';
 
 @ApiTags('Roles')
-@Controller('role')
+@Controller('roles')
 export class RoleController {
   constructor(private readonly roleService: RoleService) {}
 
@@ -25,7 +25,7 @@ export class RoleController {
     return this.roleService.findRoleById(id);
   }
 
-  @Get('/getRoleByName/:roleName')
+  @Get('/:roleName/roleName')
   @ApiOperation({
     summary: 'Get role by name',
   })

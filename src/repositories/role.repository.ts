@@ -15,11 +15,11 @@ export class RoleRepository extends Repository<Role> {
   }
 
   async findAllRoles(): Promise<Role[]> {
-    return this.find();
+    return this.find({relations: ["rolePermissions", "rolePermissions.permission"]   });
   }
 
   async findRoleById(id: string): Promise<Role | null> {
-    return this.findOne({ where: { id } });
+    return this.findOne({ where: { id }, relations: ["rolePermissions", "rolePermissions.permission"]   });
   }
 
   async findByRoleName(roleName: string): Promise<Role | null> {

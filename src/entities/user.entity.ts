@@ -11,6 +11,8 @@ import {
 } from 'typeorm';
 import { Role, AuditLog } from 'src/entities';
 import { UserLibrary } from './user-library.entity';
+import { Exclude } from 'class-transformer';
+import { UserPermission } from './user-permission.entity';
 
 @Entity('users')
 export class User {
@@ -21,6 +23,7 @@ export class User {
   username: string;
 
   @Column({ type: 'varchar', length: 255, nullable: false })
+  @Exclude()
   password: string;
 
   @Column({ type: 'varchar', length: 100, nullable: false })
@@ -32,6 +35,12 @@ export class User {
   @Column({ enum: Gender, type: 'enum', nullable: true, default: Gender.OTHER })
   gender?: Gender;
 
+  @Column({ type: 'timestamp' })
+  birthDate: Date;
+
+  @Column({ type: 'varchar', length: 100})
+  phoneNumber: string;
+
   @Column({ type: 'varchar', length: 100, unique: true, nullable: false })
   email: string;
 
@@ -40,6 +49,9 @@ export class User {
 
   @CreateDateColumn({ type: 'timestamp', default: () => 'CURRENT_TIMESTAMP' })
   createdAt: Date;
+
+  @Column({ nullable: true })
+  lastActiveAt: Date;
 
   @UpdateDateColumn({
     type: 'timestamp',
@@ -57,4 +69,7 @@ export class User {
 
   @OneToMany(() => UserLibrary, (library) => library.user)
   userLibrary?: UserLibrary[];
+
+  @OneToMany(() => UserPermission, (userPermission) => userPermission.user)
+  userPermissions: UserPermission[];
 }

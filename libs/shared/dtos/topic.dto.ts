@@ -1,7 +1,7 @@
 import { ApiProperty } from '@nestjs/swagger';
 import { CreateTopicWordDto } from './topic-word.dto';
 
-export class CreateTopic {
+export class CreateTopicDto {
   @ApiProperty({
     description: 'Topic name',
     required: true,
@@ -31,7 +31,7 @@ export class CreateTopic {
   topicWords?: CreateTopicWordDto[];
 }
 
-export class UpdateTopic {
+export class UpdateTopicDto {
   @ApiProperty({
     description: 'Topic name',
     required: true,

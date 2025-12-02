@@ -25,7 +25,7 @@ export class AuditLogController {
     return this.auditLogService.createAuditLog(auditLog);
   }
 
-  @Get('/getById/:id')
+  @Get('/:id/id')
   @ApiOperation({
     summary: 'Get audit log by ID',
   })
@@ -33,7 +33,7 @@ export class AuditLogController {
     return this.auditLogService.findById(id);
   }
 
-  @Get('/getAuditLogByUserId/:userId')
+  @Get('/:userId/userId')
   @ApiOperation({
     summary: 'Get audit logs by User ID',
   })

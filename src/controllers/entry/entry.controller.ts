@@ -17,7 +17,7 @@ export class EntryController {
     return this.entryService.findAllEntries();
   }
 
-  @Get('/getById/:id')
+  @Get('/:id/id')
   @ApiOperation({
     summary: 'Get entry by ID',
   })
@@ -33,7 +33,7 @@ export class EntryController {
     return this.entryService.createEntry(entry);
   }
 
-  @Put('/update/:id')
+  @Put('/:id')
   @ApiOperation({
     summary: 'Update an existing entry',
   })

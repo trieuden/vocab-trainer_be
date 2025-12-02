@@ -17,4 +17,8 @@ export class PermissionService {
   async findByPermissionName(permissionName: string): Promise<Permission | null> {
     return this.permissionRepository.findByPermissionName(permissionName);
   }
+
+  async findActivePermissionsByUserId(userId: string): Promise<Permission[]> {
+    return this.permissionRepository.findActivePermissionsByUserId(userId)
+  }
 }

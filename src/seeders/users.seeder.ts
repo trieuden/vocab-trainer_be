@@ -3,6 +3,7 @@ import { InjectRepository } from '@nestjs/typeorm';
 import { Repository } from 'typeorm';
 import { Role, User } from '../entities/';
 import { Gender, UserStatus } from 'libs/shared/enums/user.enum';
+import { hashPassword } from '@/core/utils/password.utils';
 
 @Injectable()
 export class UserSeeder {
@@ -26,8 +27,10 @@ export class UserSeeder {
     await this.userRepository.save([
       {
         username: 'john_doe',
-        password: '123456',
+        password: await hashPassword('123456'),
         name: 'John Doe',
+        birthDate: '1990-01-01',
+        phoneNumber: '0909090909',
         email: 'john.doe@example.com',
         avatar: 'https://i.pravatar.cc/150?img=1',
         gender: Gender.MALE,
