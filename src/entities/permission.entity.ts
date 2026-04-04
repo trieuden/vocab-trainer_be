@@ -9,7 +9,7 @@ export class Permission {
   id: string;
 
   @Column({ type: 'varchar', length: 255, unique: true, nullable: false })
-  permission_name: string;
+  permissionName: string;
 
   @OneToMany(
     () => RolePermission,

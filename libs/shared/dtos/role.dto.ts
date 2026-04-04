@@ -7,7 +7,7 @@ export class CreateRoleDto {
     required: true,
     example: 'admin',
   })
-  role_name: string;
+  roleName: string;
 
   @ApiProperty({
     description: 'Role Permission',
@@ -21,7 +21,7 @@ export class UpdateRoleDto {
     required: false,
     example: 'admin',
   })
-  role_name?: string;
+  roleName?: string;
 
   @ApiProperty({
     description: 'Role Permission',

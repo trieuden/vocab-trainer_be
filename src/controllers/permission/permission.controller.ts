@@ -4,7 +4,7 @@ import { PermissionService } from '@/services/permission/permission.service';
 import { Permission } from '@/entities';
 
 @ApiTags('Permissions')
-@Controller('permission')
+@Controller('permissions')
 export class PermissionController {
   constructor(private readonly permissionService: PermissionService) {}
 

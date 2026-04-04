@@ -16,10 +16,10 @@ export class Word {
   id: string;
 
   @Column({ type: 'varchar', length: 255, unique: true, nullable: false })
-  word: string;
+  english: string;
 
   @Column({ enum: CEFRLevel, type: 'enum', nullable: false })
-  CEFR_Level: CEFRLevel;
+  CEFRLevel: CEFRLevel;
 
   @Column({ type: 'varchar', length: 50, nullable: true })
   pronunciation_uk: string;

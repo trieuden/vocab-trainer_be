@@ -1,7 +1,8 @@
-import { Body, Controller, Delete, Get, Param, Post, Put, UploadedFiles, UseGuards, UseInterceptors } from "@nestjs/common";
+import { IsOptional } from 'class-validator';
+import { Body, Controller, Delete, Get, Param, Patch, Post, Put, Query, UploadedFiles, UseGuards, UseInterceptors } from "@nestjs/common";
 import { UserService } from "../../services/user/users.service";
 import { User } from "../../entities/user.entity";
-import { ApiOperation, ApiTags, ApiParam, ApiBearerAuth, ApiBody } from "@nestjs/swagger";
+import { ApiOperation, ApiTags, ApiParam, ApiBearerAuth, ApiBody, ApiQuery } from "@nestjs/swagger";
 import { CreateUserDto, UpdateUserDto } from "@/shared/dtos/user.dto";
 import { FileFieldsInterceptor } from "@nestjs/platform-express";
 import { ApiConsumes } from "@nestjs/swagger";
@@ -10,6 +11,7 @@ import { Roles } from "@/core/decorators/roles.decorator";
 import { RoleGuard } from "@/core/guards/role.guard";
 import { Permission } from '@/core/decorators/permission.decorator';
 import { PermissionGuard } from '@/core/guards/permission.guard';
+import { UserStatus } from '@/shared/enums/user.enum';
 
 @ApiTags("Users")
 @Controller("users")
@@ -27,11 +29,11 @@ export class UserController {
         return this.userService.findAll();
     }
 
-    @Get(":id/id")
+    @Get("/:id/id")
     @ApiOperation({
         summary: "Get user by ID",
     })
-    findById(id: string): Promise<User | null> {
+    findById(@Param('id') id: string): Promise<User | null> {
         return this.userService.findById(id);
     }
 
@@ -64,13 +66,22 @@ export class UserController {
         return this.userService.updateUser(id, user);
     }
 
-    @Delete("/:id")
+    @Patch("/:id/delete")
     @ApiParam({ name: "id", required: true, description: "User ID" })
     @ApiOperation({
         summary: "Delete user by ID",
     })
     delete(@Param("id") id: string): Promise<void> {
         return this.userService.deleteUser(id);
+    }
+
+    @Patch("/delete-multiple")
+    @ApiOperation({
+        summary: "Delete multiple users",
+    })
+    @ApiBody({type: [String]})
+    deleteMultiple(@Body() ids: string[]): Promise<void> {
+        return this.userService.deleteUsers(ids);
     }
 
     @Get("/:email/email")
@@ -100,5 +111,43 @@ export class UserController {
     })
     findByRole(@Param("roleName") role: string): Promise<User[]> {
         return this.userService.findByRole(role);
+    }
+
+    @Patch("/:id/ban")
+    @ApiParam({ name: "id", required: true, description: "User ID" })
+    @ApiOperation({
+        summary: "ban user by ID",
+    })
+    banUser(@Param("id") id: string): Promise<void> {
+        return this.userService.updateUserStatus(id, UserStatus.BANNED);
+    }
+
+    @Patch("/:id/unbanned")
+    @ApiParam({ name: "id", required: true, description: "User ID" })
+    @ApiOperation({
+        summary: "unbanned user by ID",
+    })
+    unbannedUser(@Param("id") id: string): Promise<void> {
+        return this.userService.updateUserStatus(id, UserStatus.ACTIVE);
+    }
+
+
+
+    @Get("/search")
+    @ApiOperation({
+        summary: "Search users",
+    })
+    @ApiQuery({ name: "search", required: false, description: "Search query" })
+    search(@Query("search") search?: string): Promise<User[]> {
+        return this.userService.searchUsers(search);
+    }
+
+    @Get("/search/:roleName/role")
+    @ApiOperation({
+        summary: "Search users by role",
+    })
+    @ApiQuery({ name: "search", required: false, description: "Search query" })
+    searchWithRole(@Param("roleName") roleName: string, @Query("search") search?: string): Promise<User[]> {
+        return this.userService.searchUsersWithRole(roleName, search);
     }
 }

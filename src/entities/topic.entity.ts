@@ -5,6 +5,7 @@ import {
   Entity,
   ManyToOne,
   OneToMany,
+  CreateDateColumn,
 } from 'typeorm';
 import { TopicWord } from './topic-word.entity';
 
@@ -19,10 +20,13 @@ export class Topic {
   description?: string;
 
   @Column({ type: 'varchar', length: 255, nullable: true })
-  imageUrl?: string;
+  imageURL?: string;
 
   @Column({ enum: TopicStatus, type: 'enum', default: TopicStatus.ACTIVE })
   status: TopicStatus;
+
+  @CreateDateColumn({ type: 'timestamp', default: () => 'CURRENT_TIMESTAMP' })
+  createdAt: Date;
 
   @OneToMany(() => TopicWord, (topicWord) => topicWord.topic)
   topicWords: TopicWord[];

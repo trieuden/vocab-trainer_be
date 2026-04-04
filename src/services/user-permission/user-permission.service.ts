@@ -1,6 +1,7 @@
 import { Injectable } from '@nestjs/common';
 import { UserPermissionRepository } from '@/repositories/user-permission.repository';
 import { UserPermission } from '@/entities/user-permission.entity';
+import { CreateUserPermissionDto } from '@/shared/dtos/user-permission.dto';
 
 @Injectable()
 export class UserPermissionService {
@@ -16,5 +17,13 @@ export class UserPermissionService {
 
   async findAll(): Promise<UserPermission[]> {
     return this.userPermissionRepository.findAll();
+  }
+
+  async createUserPermission(userPermission: CreateUserPermissionDto): Promise<UserPermission> {
+    return this.userPermissionRepository.createUserPermission(userPermission);
+  }
+
+  async deleteUserPermissionById(id: string): Promise<void> {
+    return this.userPermissionRepository.deleteUserPermission(id);
   }
 }

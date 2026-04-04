@@ -20,10 +20,10 @@ export class RoleSeeder {
     // Tạo sample users
     await this.roleRepository.save([
       {
-        role_name: 'admin',
+        roleName: 'admin',
       },
       {
-        role_name: 'user',
+        roleName: 'user',
       },
     ]);
   }

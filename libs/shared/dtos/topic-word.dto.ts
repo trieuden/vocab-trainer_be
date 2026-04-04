@@ -1,6 +1,8 @@
 import { ApiProperty } from '@nestjs/swagger';
+import { IsNotEmpty } from 'class-validator';
 
 export class CreateTopicWordDto {
+  @IsNotEmpty()
   @ApiProperty({
     description: 'Word ID',
     required: true,
@@ -8,6 +10,7 @@ export class CreateTopicWordDto {
   })
   wordId: string;
 
+  @IsNotEmpty()
   @ApiProperty({
     description: 'Topic ID',
     required: true,

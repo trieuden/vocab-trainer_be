@@ -20,28 +20,28 @@ export class PermissionSeeder {
 
         await this.permissionRepository.save([
             {
-                permission_name: "ADMIN_P_USERS",
+                permissionName: "ADMIN_P_USERS",
             },
             {
-                permission_name: "ADMIN_P_AUDITLOGS",
+                permissionName: "ADMIN_P_AUDITLOGS",
             },
             {
-                permission_name: "ADMIN_P_LIBRARIES",
+                permissionName: "ADMIN_P_LIBRARIES",
             },
             {
-                permission_name: "ADMIN_P_PERMISSIONS",
+                permissionName: "ADMIN_P_PERMISSIONS",
             },
             {
-                permission_name: "ADMIN_P_ROLES",
+                permissionName: "ADMIN_P_ROLES",
             },
             {
-                permission_name: "ADMIN_P_TOPICS",
+                permissionName: "ADMIN_P_TOPICS",
             },
             {
-                permission_name: "ADMIN_P_WORDS",
+                permissionName: "ADMIN_P_WORDS",
             },
             {
-                permission_name: "USER_S_ACCESS",
+                permissionName: "USER_S_ACCESS",
             },
         ]);
     }

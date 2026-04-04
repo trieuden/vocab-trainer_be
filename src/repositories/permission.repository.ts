@@ -11,7 +11,7 @@ export class PermissionRepository extends Repository<Permission> {
   }
 
   async findByPermissionName(permissionName: string): Promise<Permission | null> {
-    return this.findOne({ where: { permission_name: permissionName } });
+    return this.findOne({ where: { permissionName: permissionName } });
   }
 
   async findAllPermissions(): Promise<Permission[]> {

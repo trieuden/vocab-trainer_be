@@ -1,9 +1,9 @@
 export enum CEFRLevel{
-    A,
-    B1,
-    B2,
-    C1,
-    C2,
+    A='A',
+    B1 ='B1',
+    B2 = 'B2',
+    C1 = 'B3',
+    C2 = 'B4',
 }
 export enum WordType {
     NOUN = 'noun',

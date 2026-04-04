@@ -23,22 +23,22 @@ export class EntrySeeder {
 
     const entries: Partial<Entry>[] = [
       {
-        word_type: WordType.NOUN,
+        wordType: WordType.NOUN,
         vietnamese: 'Xin chào',
         example: 'Hello, how are you?',
-        word: words.find((word) => word.word === 'hello'),
+        word: words.find((word) => word.english === 'hello'),
       },
       {
-        word_type: WordType.NOUN,
+        wordType: WordType.NOUN,
         vietnamese: 'Lượt chơi / sự chơi',
         example: 'He says hello to everyone.',
-        word: words.find((word) => word.word === 'play'),
+        word: words.find((word) => word.english === 'play'),
       },
       {
-        word_type: WordType.VERB,
+        wordType: WordType.VERB,
         vietnamese: 'Chơi',
         example: 'They play football every weekend.',
-        word: words.find((word) => word.word === 'play'),
+        word: words.find((word) => word.english === 'play'),
       },
     ];
 

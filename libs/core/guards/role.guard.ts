@@ -33,11 +33,11 @@ export class RoleGuard implements CanActivate {
     }
 
     // Kiểm tra role của user có trong danh sách roles được yêu cầu không
-    const hasRole = requiredRoles.some((role) => user.role.role_name === role);
+    const hasRole = requiredRoles.some((role) => user.role.roleName === role);
 
     if (!hasRole) {
       throw new ForbiddenException(
-        `Access denied. Required roles: ${requiredRoles.join(', ')}. Your role: ${user.role.role_name}`,
+        `Access denied. Required roles: ${requiredRoles.join(', ')}. Your role: ${user.role.roleName}`,
       );
     }
 

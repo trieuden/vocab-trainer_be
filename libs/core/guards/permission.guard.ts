@@ -56,12 +56,12 @@ export class PermissionGuard implements CanActivate {
 
     // Kiểm tra permission trong rolePermissions
     const hasRolePermission = user.role?.rolePermissions?.some(
-      (rolePermission) => rolePermission.permission?.permission_name === requiredPermission,
+      (rolePermission) => rolePermission.permission?.permissionName === requiredPermission,
     ) || false;
 
     // Kiểm tra permission trong userPermissions
     const hasUserPermission = user.userPermissions?.some(
-      (userPermission) => userPermission.permission?.permission_name === requiredPermission,
+      (userPermission) => userPermission.permission?.permissionName === requiredPermission,
     ) || false;
 
     // Cả hai điều kiện phải đều true (AND)

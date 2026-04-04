@@ -1,6 +1,4 @@
 import { Injectable } from '@nestjs/common';
-import { InjectRepository } from '@nestjs/typeorm';
-import { Repository } from 'typeorm';
 import { Topic } from '@/entities';
 import { TopicRepository } from '@/repositories/topic.repository';
 import { CreateTopicDto, UpdateTopicDto } from '@/shared/dtos/topic.dto';

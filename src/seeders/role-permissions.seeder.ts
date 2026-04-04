@@ -29,36 +29,36 @@ export class RolePermissionSeeder {
     // Tạo sample
     await this.rolePermissionRepository.save([
       {
-        role: roles.find((role)=> role.role_name === 'admin'),
-        permission: permissions.find((role)=> role.permission_name === 'ADMIN_P_USERS')
+        role: roles.find((role)=> role.roleName === 'admin'),
+        permission: permissions.find((role)=> role.permissionName === 'ADMIN_P_USERS')
       },
       {
-        role: roles.find((role)=> role.role_name === 'admin'),
-        permission: permissions.find((role)=> role.permission_name === 'ADMIN_P_TOPICS')
+        role: roles.find((role)=> role.roleName === 'admin'),
+        permission: permissions.find((role)=> role.permissionName === 'ADMIN_P_TOPICS')
       },
       {
-        role: roles.find((role)=> role.role_name === 'admin'),
-        permission: permissions.find((role)=> role.permission_name === 'ADMIN_P_LIBRARIES')
+        role: roles.find((role)=> role.roleName === 'admin'),
+        permission: permissions.find((role)=> role.permissionName === 'ADMIN_P_LIBRARIES')
       },
       {
-        role: roles.find((role)=> role.role_name === 'user'),
-        permission: permissions.find((role)=> role.permission_name === 'USER_S_ACCESS')
+        role: roles.find((role)=> role.roleName === 'user'),
+        permission: permissions.find((role)=> role.permissionName === 'USER_S_ACCESS')
       },
       {
-        role: roles.find((role)=> role.role_name === 'admin'),
-        permission: permissions.find((role)=> role.permission_name === 'ADMIN_P_AUDITLOGS')
+        role: roles.find((role)=> role.roleName === 'admin'),
+        permission: permissions.find((role)=> role.permissionName === 'ADMIN_P_AUDITLOGS')
       },
       {
-        role: roles.find((role)=> role.role_name === 'admin'),
-        permission: permissions.find((role)=> role.permission_name === 'ADMIN_P_ROLES')
+        role: roles.find((role)=> role.roleName === 'admin'),
+        permission: permissions.find((role)=> role.permissionName === 'ADMIN_P_ROLES')
       },
       {
-        role: roles.find((role)=> role.role_name === 'admin'),
-        permission: permissions.find((role)=> role.permission_name === 'ADMIN_P_PERMISSIONS')
+        role: roles.find((role)=> role.roleName === 'admin'),
+        permission: permissions.find((role)=> role.permissionName === 'ADMIN_P_PERMISSIONS')
       },
       {
-        role: roles.find((role)=> role.role_name === 'admin'),
-        permission: permissions.find((role)=> role.permission_name === 'ADMIN_P_WORDS')
+        role: roles.find((role)=> role.roleName === 'admin'),
+        permission: permissions.find((role)=> role.permissionName === 'ADMIN_P_WORDS')
       },
     ]);
   }

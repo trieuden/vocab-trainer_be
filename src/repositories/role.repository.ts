@@ -23,12 +23,12 @@ export class RoleRepository extends Repository<Role> {
   }
 
   async findByRoleName(roleName: string): Promise<Role | null> {
-    return this.findOne({ where: { role_name: roleName } });
+    return this.findOne({ where: { roleName: roleName } });
   }
 
   async createRole(role: CreateRoleDto): Promise<Role> {
     const newRole = this.create();
-    newRole.role_name = role.role_name;
+    newRole.roleName = role.roleName;
     const savedRole = await this.save(newRole);
     await Promise.all(
       role.rolePermissions.map(async (rp) => {
@@ -44,7 +44,7 @@ export class RoleRepository extends Repository<Role> {
       throw new Error('Role not found');
     }
 
-    existingRole.role_name = role.role_name ?? existingRole.role_name;
+    existingRole.roleName = role.roleName ?? existingRole.roleName;
 
     if (role.rolePermissions) {
       await Promise.all(

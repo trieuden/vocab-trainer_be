@@ -1,16 +1,16 @@
 import { RoleRepository } from "./role.repository";
 import { Injectable } from "@nestjs/common";
-import { DataSource, Repository } from "typeorm";
+import { DataSource, In, Like, Not, Repository } from "typeorm";
 import { User } from "src/entities";
 import { CreateUserDto, UpdateUserDto } from "@/shared/dtos/user.dto";
 import { NotFoundException } from "@nestjs/common/exceptions/not-found.exception";
 import { BadRequestException } from "@nestjs/common/exceptions/bad-request.exception";
 import { hashPassword } from "@/core/utils/password.utils";
-import { Gender } from "@/shared/enums/user.enum";
+import { Gender, UserStatus } from "@/shared/enums/user.enum";
 import * as bcrypt from "bcrypt";
 import { InjectDataSource } from "@nestjs/typeorm";
 import { UserRole } from "@/shared/enums/user.enum";
-import { CloudinaryService } from "@/services/cloundinary/cloudinary.service";
+import { CloudinaryService } from "@/services/cloudinary/cloudinary.service";
 import { UserPermissionRepository } from "./user-permission.repository";
 import { UserPermission } from "@/entities/user-permission.entity";
 
@@ -26,19 +26,19 @@ export class UserRepository extends Repository<User> {
     }
 
     async findById(id: string): Promise<User | null> {
-        return this.findOne({ where: { id },relations: ["role","userPermissions.permission"]  });
+        return this.findOne({ where: { id, status: Not(UserStatus.DELETED) }, relations: ["role", "userPermissions.permission"] });
     }
     async findByRole(role: string): Promise<User[]> {
-        return this.find({ where: { role: { role_name: role.toLowerCase() as UserRole } }, relations: ["role",  "userPermissions.permission"] });
+        return this.find({ where: { role: { roleName: role.toLowerCase() as UserRole }, status: Not(UserStatus.DELETED) }, relations: ["role", "userPermissions.permission"] });
     }
 
     async findAllUsers(): Promise<User[]> {
-        return this.find({ order: { createdAt: "DESC" }, relations: ["role", "userPermissions.permission"] });
+        return this.find({ order: { createdAt: "DESC" }, relations: ["role", "userPermissions.permission"], where: { status: Not(UserStatus.DELETED) } });
     }
 
     async validateUser(username: string, password: string): Promise<User | null> {
         try {
-            const user = await this.findOne({ where: { username }, relations: ["role"] });
+            const user = await this.findOne({ where: { username, status: Not(UserStatus.DELETED) }, relations: ["role"] });
             if (user && (await bcrypt.compare(password, user.password))) {
                 return user;
             }
@@ -85,12 +85,10 @@ export class UserRepository extends Repository<User> {
                 newAvatar = result.secure_url;
             }
 
-            const role = user.roleId ? await this.roleRepository.findOne({ where: {id: user.roleId}, relations: ["rolePermissions.permission"]}) : null;
+            const role = user.roleId ? await this.roleRepository.findOne({ where: { id: user.roleId }, relations: ["rolePermissions.permission"] }) : null;
             if (!role) {
                 throw new BadRequestException("Invalid role");
             }
-
-
 
             const newUser = this.create({
                 username: user.username,
@@ -106,12 +104,14 @@ export class UserRepository extends Repository<User> {
             const savedUser = await this.save(newUser);
 
             if (role?.rolePermissions && role.rolePermissions.length > 0) {
-                await Promise.all(role.rolePermissions.map(async(rolePermission)=> {
-                    const newUserPermission = new UserPermission()
-                    newUserPermission.user = savedUser;
-                    newUserPermission.permission = rolePermission.permission;
-                    await this.userPermissionRepository.save(newUserPermission)
-                }))
+                await Promise.all(
+                    role.rolePermissions.map(async (rolePermission) => {
+                        const newUserPermission = new UserPermission();
+                        newUserPermission.user = savedUser;
+                        newUserPermission.permission = rolePermission.permission;
+                        await this.userPermissionRepository.save(newUserPermission);
+                    })
+                );
             }
             return savedUser;
         } catch (error) {
@@ -122,13 +122,13 @@ export class UserRepository extends Repository<User> {
 
     async updateUser(id: string, dto: UpdateUserDto): Promise<User> {
         try {
-            const user = await this.findOneBy({ id });
+            const user = await this.findOneBy({ id, status: Not(UserStatus.DELETED) });
             if (!user) throw new NotFoundException("User not found");
 
             let newAvatar = "";
             if (dto.avatar || dto.isDeleteAvatar) {
                 try {
-                    if(user.avatar){
+                    if (user.avatar) {
                         await this.cloudinaryService.deleteImageByUrl(user.avatar);
                     }
                 } catch (error) {
@@ -142,12 +142,12 @@ export class UserRepository extends Repository<User> {
                 } catch (error) {
                     console.error("Failed to delete avatar from Cloudinary:", error.message);
                 }
-            }            
+            }
 
             const updated = this.merge(user, {
                 password: dto.password,
                 name: dto.name,
-                avatar: dto.isDeleteAvatar === true ? '' :  (!!newAvatar ? newAvatar : user.avatar),
+                avatar: dto.isDeleteAvatar === true ? "" : !!newAvatar ? newAvatar : user.avatar,
                 gender: dto.gender,
                 birthDate: dto.birthDate,
                 phoneNumber: dto.phoneNumber,
@@ -160,29 +160,87 @@ export class UserRepository extends Repository<User> {
     }
 
     async deleteUser(id: string): Promise<void> {
-        const user = await this.findById(id);
+        const user = await this.findOneBy({ id, status: Not(UserStatus.DELETED) });
         if (!user) {
             throw new NotFoundException("User not found");
         }
-        if (user.avatar) {
-            try {
-                await this.cloudinaryService.deleteImageByUrl(user.avatar);
-            } catch (error) {
-                console.error("Failed to delete avatar from Cloudinary:", error.message);
-            }
-        }
+        user.status = UserStatus.DELETED;
+        await this.save(user);
 
-        await this.delete(id);
+    }
+
+    async deleteUsers(ids: string[]): Promise<void> {
+        const users = await this.find({ where: { id: In(ids), status: Not(UserStatus.DELETED) } });
+        if (users.length !== ids.length) {
+            throw new NotFoundException("Some users not found");
+        }
+        users.forEach(async (user) => {
+            user.status = UserStatus.DELETED;
+            await this.save(user);
+        });
     }
 
     async findByEmail(email: string): Promise<User | null> {
-        return this.findOne({ where: { email }, relations: ["role"] });
+        return this.findOne({ where: { email, status: Not(UserStatus.DELETED) }, relations: ["role"] });
     }
     async findByUsername(username: string): Promise<User | null> {
-        return this.findOne({ where: { username }, relations: ["role"] });
+        return this.findOne({ where: { username, status: Not(UserStatus.DELETED) }, relations: ["role"] });
     }
 
     async updateLastActiveAt(id: string): Promise<void> {
         await this.update(id, { lastActiveAt: new Date() });
+    }
+
+    async updateUserStatus (id: string, status: UserStatus): Promise<void> {
+        const user = await this.findOneBy({ id, status: Not(UserStatus.DELETED) });
+        if (!user) {
+            throw new NotFoundException("User not found");
+        }
+        user.status = status;
+        await this.save(user);
+    }
+
+    async searchUsers(search?: string): Promise<User[]> {
+        if (!search) {
+            return this.find({ where: { status: Not(UserStatus.DELETED) }, order: { createdAt: "DESC" }, relations: ["role", "userPermissions.permission"] });
+        }
+
+        const commonCondition = {
+            status: Not(UserStatus.DELETED)
+        };
+
+        const users = await this.find({
+            where: [
+                { ... commonCondition,username: Like(`%${search}%`) },
+                { ... commonCondition,name: Like(`%${search}%`) },
+                { ... commonCondition,phoneNumber: Like(`%${search}%`) },
+                { ... commonCondition,email: Like(`%${search}%`) },
+            ],
+            
+            relations: ["role", "userPermissions.permission"],
+        });
+        return users;
+    }
+    async searchUsersWithRole(roleName: string, search?: string): Promise<User[]> {
+        
+        if (!search) {
+            return this.find({ where: { role: { roleName: roleName.toLowerCase() as UserRole }, status: Not(UserStatus.DELETED) }, order: { createdAt: "DESC" }, relations: ["role", "userPermissions.permission"] });
+        }
+
+        const commonCondition = {
+            role: { roleName: roleName.toLowerCase() as UserRole },
+            status: Not(UserStatus.DELETED)
+        };
+        
+        return this.find({
+            where: [
+                { ...commonCondition, username: Like(`%${search}%`) },
+                { ...commonCondition, name: Like(`%${search}%`) },
+                { ...commonCondition, phoneNumber: Like(`%${search}%`) },
+                { ...commonCondition, email: Like(`%${search}%`) },
+            ],
+            order: { createdAt: "DESC" },
+            relations: ["role", "userPermissions.permission"],
+        }); 
     }
 }

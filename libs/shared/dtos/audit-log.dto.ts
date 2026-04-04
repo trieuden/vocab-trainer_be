@@ -5,7 +5,7 @@ export class CreateAuditLog {
     description: 'Tên hành động',
     example: 'CREATE',
   })
-  actionDetail: string;
+  actionDetails: string;
 
   @ApiProperty({
     description: 'ID người dùng thực hiện hành động',

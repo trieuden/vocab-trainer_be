@@ -1,11 +1,11 @@
-import { Controller, Get, Put, Post } from '@nestjs/common';
+import { Controller, Get, Param, Body, Post, Delete } from '@nestjs/common';
 import { ApiOperation, ApiTags } from '@nestjs/swagger';
-import { Param, Body } from '@nestjs/common';
 import { UserPermissionService } from '@/services/user-permission/user-permission.service';
 import { UserPermission } from '@/entities/user-permission.entity';
+import { CreateUserPermissionDto } from '@/shared/dtos/user-permission.dto';
 
 @ApiTags('User-Permissions')
-@Controller('user-permission')
+@Controller('user-permissions')
 export class UserPermissionController {
   constructor(private readonly userPermissionService: UserPermissionService) {}
 
@@ -31,5 +31,21 @@ export class UserPermissionController {
   })
   findById(@Param('id') id: string): Promise<UserPermission | null> {
     return this.userPermissionService.findUserPermissionById(id);
+  }
+
+  @Post()
+  @ApiOperation({
+    summary: 'Create a new user-permission',
+  })
+  createUserPermission(@Body() userPermission: CreateUserPermissionDto): Promise<UserPermission> {
+    return this.userPermissionService.createUserPermission(userPermission);
+  }
+
+  @Delete('/:id')
+  @ApiOperation({
+    summary: 'Delete user-permission by ID',
+  })
+  deleteById(@Param('id') id: string): Promise<void> {
+    return this.userPermissionService.deleteUserPermissionById(id);
   }
 }

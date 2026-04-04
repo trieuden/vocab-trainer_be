@@ -13,4 +13,5 @@ export * from './user.module';
 export * from './word.module';
 export * from './auth.module';
 export * from './cloudinary.module';
-export * from './user-permission.module'
+export * from './user-permission.module';
+export * from '../@customs/feature-modules.loader';

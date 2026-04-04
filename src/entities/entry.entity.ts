@@ -15,7 +15,7 @@ export class Entry {
   id: string;
 
   @Column({ enum: WordType, type: 'enum', nullable: false })
-  word_type: WordType;
+  wordType: WordType;
 
   @Column({ type: 'varchar', length: 255, nullable: false })
   vietnamese: string;

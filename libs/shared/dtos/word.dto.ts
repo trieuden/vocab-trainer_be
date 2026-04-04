@@ -10,7 +10,7 @@ export class CreateWordDto {
     example: 'Road',
   })
   @Column({ type: 'varchar', length: 255, unique: true, nullable: false })
-  word: string;
+  english: string;
 
   @ApiProperty({
     enum: CEFRLevel,
@@ -19,7 +19,7 @@ export class CreateWordDto {
     required: true,
   })
   @IsEnum(CEFRLevel)
-  CEFR_Level: CEFRLevel;
+  CEFRLevel: CEFRLevel;
 
   @ApiProperty({
     description: 'Phiên âm Anh Anh của từ vựng',
@@ -42,5 +42,5 @@ export class UpdateWordDto {
     example: 'Road',
   })
   @Column({ type: 'varchar', length: 255, unique: true, nullable: false })
-  word: string;
+  english: string;
 }

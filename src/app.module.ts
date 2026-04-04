@@ -1,29 +1,9 @@
-
 import { Module } from '@nestjs/common';
 import { ConfigModule } from '@nestjs/config';
 import { APP_INTERCEPTOR } from '@nestjs/core';
 import { LastActiveInterceptor } from './common/interceptors/last-active.interceptor';
-import {
-  WordModule,
-  UserModule,
-  SeedersModule,
-  ActionTypeModule,
-  AuditLogModule,
-  EntryModule,
-  LibraryModule,
-  PermissionModule,
-  RolePermissionModule,
-  RoleModule,
-  TopicWordModule,
-  TopicModule,
-  UserLibraryModule,
-  AuthModule,
-  CloudinaryModule,
-  UserPermissionModule,
-} from './modules';
+import { appFeatureModules } from './modules';
 import { TypeOrmModule } from '@nestjs/typeorm';
-import { UserPermissionService } from './services/user-permission/user-permission.service';
-import { UserPermissionController } from './controllers/user-permission/user-permission.controller';
 
 @Module({
   imports: [
@@ -41,27 +21,11 @@ import { UserPermissionController } from './controllers/user-permission/user-per
       synchronize: true,
       logging: true,
     }),
-    AuthModule,
-    CloudinaryModule,
-    ActionTypeModule,
-    AuditLogModule,
-    EntryModule,
-    LibraryModule,
-    PermissionModule,
-    RolePermissionModule,
-    RoleModule,
-    SeedersModule,
-    TopicWordModule,
-    TopicModule,
-    UserLibraryModule,
-    UserModule,
-    WordModule,
-    UserPermissionModule
+    ...appFeatureModules,
   ],
-  controllers: [UserPermissionController],
   providers: [{
     provide: APP_INTERCEPTOR,
     useClass: LastActiveInterceptor,
-  }, UserPermissionService],
+  }],
 })
 export class AppModule {}

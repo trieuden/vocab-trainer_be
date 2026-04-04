@@ -14,10 +14,10 @@ export class AuditLog {
   id: string;
 
   @Column({ type: 'text', nullable: false })
-  action_details: string;
+  actionDetails: string;
 
   @Column({ type: 'timestamp', default: () => 'CURRENT_TIMESTAMP' })
-  action_time: Date;
+  actionAt: Date;
 
   @ManyToOne(() => User, (user) => user.auditLogs)
   @JoinColumn({ name: 'userId' })

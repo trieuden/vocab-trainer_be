@@ -4,8 +4,7 @@ import { UserRepository } from "@/repositories/user.repository";
 import { CreateUserDto, UpdateUserDto } from "@/shared/dtos/user.dto";
 import { hashPassword } from "@/core/utils/password.utils";
 import { BadRequestException } from "@nestjs/common/exceptions/bad-request.exception";
-import { Gender } from "@/shared/enums/user.enum";
-import { Multer } from "multer";
+import { UserStatus } from "@/shared/enums/user.enum";
 
 @Injectable()
 export class UserService {
@@ -51,20 +50,45 @@ export class UserService {
     }
 
     async deleteUser(id: string): Promise<void> {
-        const user = await this.userRepository.findById(id);
-        if (!user) {
-            throw new BadRequestException("User not found");
+        try {
+            await this.userRepository.deleteUser(id);
+        } catch (error) {
+            console.log("Error deleting user:", error);
+            throw new BadRequestException("Failed to delete user");
         }
-        await this.userRepository.deleteUser(id);
     }
+
+    async deleteUsers(ids: string[]): Promise<void> {
+        try {
+            await this.userRepository.deleteUsers(ids);
+        } catch (error) {
+            console.log("Error deleting user:", error);
+            throw new BadRequestException("Failed to delete user");
+        }
+    }
+
     async findByEmail(email: string): Promise<User | null> {
         return this.userRepository.findByEmail(email);
     }
+
     async findByUsername(username: string): Promise<User | null> {
         return this.userRepository.findByUsername(username);
     }
 
     async updateLastActiveAt(id: string): Promise<void> {
         await this.userRepository.updateLastActiveAt(id);
+    }
+
+    async updateUserStatus(id: string, status: UserStatus) : Promise<void> {
+        await this.userRepository.updateUserStatus(id, status)
+    }
+
+
+    async searchUsers(search?: string): Promise<User[]> {
+        return this.userRepository.searchUsers(search);
+    }
+
+    async searchUsersWithRole(roleName: string, search?: string): Promise<User[]> {
+        return this.userRepository.searchUsersWithRole(roleName, search);
     }
 }

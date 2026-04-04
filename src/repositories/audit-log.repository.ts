@@ -22,8 +22,8 @@ export class AuditLogRepository extends Repository<AuditLog> {
         throw new Error('Action type not found');
       }
       const newAuditLog = this.create({
-        action_details: auditLog.actionDetail,
-        action_time: new Date(),
+        actionDetails: auditLog.actionDetails,
+        actionAt: new Date(),
         user: user,
         actionType: { id: auditLog.actionTypeId } as any,
       });
@@ -39,10 +39,10 @@ export class AuditLogRepository extends Repository<AuditLog> {
   }
 
   async findAllAuditLogs(): Promise<AuditLog[]> {
-    return this.find({ order: { action_time: 'DESC' }, relations: ['user', 'actionType'] });
+    return this.find({ order: { actionAt: 'DESC' }, relations: ['user', 'actionType'] });
   }
 
   async findByUserId(userId: string): Promise<AuditLog[]> {
-    return this.find({ where: { user: { id: userId } }, order: { action_time: 'DESC' }, relations: ['user', 'actionType'] });
+    return this.find({ where: { user: { id: userId } }, order: { actionAt: 'DESC' }, relations: ['user', 'actionType'] });
   }
 }

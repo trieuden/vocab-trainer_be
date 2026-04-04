@@ -1,12 +1,11 @@
 import { TopicWordService } from '@/services/topic-word/topic-word.service';
-import { Controller, Delete, Get, Post } from '@nestjs/common';
+import { Controller, Delete, Get, Post, Body, Param } from '@nestjs/common';
 import { ApiOperation, ApiTags } from '@nestjs/swagger';
 import { TopicWord } from '@/entities';
-import { Param } from '@nestjs/common';
 import { CreateTopicWordDto } from '@/shared/dtos/topic-word.dto';
 
 @ApiTags('Topic-Words')
-@Controller('topic-word')
+@Controller('topic-words')
 export class TopicWordController {
   constructor(private readonly topicWordService: TopicWordService) {}
 
@@ -30,7 +29,7 @@ export class TopicWordController {
   @ApiOperation({
     summary: 'Create a new topic-word',
   })
-  createTopicWord(topicWord: CreateTopicWordDto): Promise<TopicWord> {
+  createTopicWord(@Body() topicWord: CreateTopicWordDto): Promise<TopicWord> {
     return this.topicWordService.createTopicWord(topicWord);
   }
 

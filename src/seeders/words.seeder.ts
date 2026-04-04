@@ -19,14 +19,14 @@ export class WordSeeder {
 
     const words: Partial<Word>[] = [
       {
-        word: 'hello',
-        CEFR_Level: CEFRLevel.A,
+        english: 'hello',
+        CEFRLevel: CEFRLevel.A,
         pronunciation_uk: 'həˈləʊ',
         pronunciation_us: 'həˈloʊ',
       },
       {
-        word: 'play',
-        CEFR_Level: CEFRLevel.A,
+        english: 'play',
+        CEFRLevel: CEFRLevel.A,
         pronunciation_uk: 'pleɪ',
         pronunciation_us: 'pleɪ',
       },
