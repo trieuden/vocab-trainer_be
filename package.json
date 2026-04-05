@@ -98,5 +98,10 @@
     ],
     "coverageDirectory": "../coverage",
     "testEnvironment": "node"
+  },
+  "overrides": {
+    "picomatch": "4.0.4",
+    "lodash": "4.18.1",
+    "path-to-regexp": "8.4.2"
   }
 }
