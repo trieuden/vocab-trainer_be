@@ -1,37 +1,40 @@
-import { ApiProperty } from '@nestjs/swagger';
-import { CreateTopicWordDto } from './topic-word.dto';
-import { IsBoolean, IsNotEmpty, IsOptional } from 'class-validator';
-import { Transform } from 'class-transformer';
+import { ApiProperty } from "@nestjs/swagger";
+import { CreateTopicWordDto } from "./topic-word.dto";
+import { IsBoolean, IsNotEmpty, IsOptional } from "class-validator";
+import { Transform } from "class-transformer";
 export class CreateTopicDto {
   @IsNotEmpty()
   @ApiProperty({
-    description: 'Topic name',
+    description: "Topic name",
     required: true,
-    example: 'Science',
+    example: "Science",
   })
   topicName: string;
 
   @IsOptional()
   @ApiProperty({
-    description: 'Description of the topic',
+    description: "Description of the topic",
     required: false,
-    example: 'A topic about various scientific subjects.',
+    example: "A topic about various scientific subjects.",
   })
   description?: string;
 
   @IsOptional()
   @ApiProperty({
-    description: 'Ảnh đại diện của topic',
-    type: 'string',
-    format: 'binary',
+    description: "Ảnh đại diện của topic",
+    type: "string",
+    format: "binary",
     required: false,
   })
-  imageURL?: Express.Multer.File
+  imageURL?: Express.Multer.File;
 
   @IsOptional()
   @Transform(({ value }) => {
-    if (typeof value === 'string') {
-      return value.split(',').map(id => id.trim()).filter(id => id.length > 0);
+    if (typeof value === "string") {
+      return value
+        .split(",")
+        .map((id) => id.trim())
+        .filter((id) => id.length > 0);
     }
     if (Array.isArray(value)) {
       return value;
@@ -39,7 +42,7 @@ export class CreateTopicDto {
     return value;
   })
   @ApiProperty({
-    description: 'wordIds',
+    description: "wordIds",
     required: false,
     example: [],
   })
@@ -49,36 +52,36 @@ export class CreateTopicDto {
 export class UpdateTopicDto {
   @IsOptional()
   @ApiProperty({
-    description: 'Topic name',
+    description: "Topic name",
     required: false,
-    example: ''
+    example: "",
   })
   topicName: string;
 
   @IsOptional()
   @ApiProperty({
-    description: 'Description of the topic',
+    description: "Description of the topic",
     required: false,
-    example: ''
-  })  
+    example: "",
+  })
   description?: string;
 
   @IsOptional()
   @ApiProperty({
-    description: 'Ảnh đại diện của topic',
-    type: 'string',
-    format: 'binary',
+    description: "Ảnh đại diện của topic",
+    type: "string",
+    format: "binary",
     required: false,
   })
-  imageURL?: Express.Multer.File
+  imageURL?: Express.Multer.File;
 
   @IsOptional()
   @IsBoolean()
-  @Transform(({ value }) => value === 'true' || value === true)
+  @Transform(({ value }) => value === "true" || value === true)
   @ApiProperty({
-    description:'is delete Avatar',
+    description: "is delete Avatar",
     default: false,
-    required:false
+    required: false,
   })
-  isDeleteAvatar?: boolean
+  isDeleteAvatar?: boolean;
 }

@@ -1,30 +1,30 @@
-import { ApiProperty } from '@nestjs/swagger';
-import { CreateRolePermissionDto } from './role-permission.dto';
+import { ApiProperty } from "@nestjs/swagger";
+import { CreateRolePermissionDto } from "./role-permission.dto";
 
 export class CreateRoleDto {
   @ApiProperty({
-    description: 'Role name',
+    description: "Role name",
     required: true,
-    example: 'admin',
+    example: "admin",
   })
   roleName: string;
 
   @ApiProperty({
-    description: 'Role Permission',
+    description: "Role Permission",
   })
   rolePermissions: CreateRolePermissionDto[];
 }
 
 export class UpdateRoleDto {
   @ApiProperty({
-    description: 'Role name',
+    description: "Role name",
     required: false,
-    example: 'admin',
+    example: "admin",
   })
   roleName?: string;
 
   @ApiProperty({
-    description: 'Role Permission',
+    description: "Role Permission",
   })
   rolePermissions?: CreateRolePermissionDto[];
 }

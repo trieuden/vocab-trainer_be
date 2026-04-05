@@ -1,75 +1,60 @@
-import { Gender, UserStatus } from 'libs/shared/enums/user.enum';
+import { Entity, Column, OneToMany } from "typeorm";
+import { Exclude } from "class-transformer";
+import { UserType } from "@/common/enums/EUser";
 import {
-  Entity,
-  PrimaryGeneratedColumn,
-  Column,
-  CreateDateColumn,
-  UpdateDateColumn,
-  JoinColumn,
-  OneToMany,
-  ManyToOne,
-} from 'typeorm';
-import { Role, AuditLog } from 'src/entities';
-import { UserLibrary } from './user-library.entity';
-import { Exclude } from 'class-transformer';
-import { UserPermission } from './user-permission.entity';
+  BaseEntity,
+  StudentGroup,
+  LessonPlan,
+  GameResult,
+  TaskResult,
+  QuestionResult,
+} from "@/entities";
 
-@Entity('users')
-export class User {
-  @PrimaryGeneratedColumn('uuid')
-  id: string;
+@Entity("users")
+export class User extends BaseEntity {
+  @Column({ type: "varchar", length: 255 })
+  name: string;
 
-  @Column({ type: 'varchar', length: 255, nullable: false })
+  @Column({ type: "enum", enum: UserType, default: UserType.STUDENT })
+  type: UserType;
+
+  @Column({ type: "timestamp", nullable: true })
+  lastActiveAt?: Date;
+
+  @Column({ type: "varchar", length: 255, unique: true })
   username: string;
 
-  @Column({ type: 'varchar', length: 255, nullable: false })
+  @Column({ type: "varchar", length: 255 })
   @Exclude()
   password: string;
 
-  @Column({ type: 'varchar', length: 100, nullable: false })
-  name: string;
-
-  @Column({ type: 'text', nullable: true })
-  avatar?: string;
-
-  @Column({ enum: Gender, type: 'enum', nullable: true, default: Gender.OTHER })
-  gender?: Gender;
-
-  @Column({ type: 'timestamp' })
-  birthDate: Date;
-
-  @Column({ type: 'varchar', length: 100})
-  phoneNumber: string;
-
-  @Column({ type: 'varchar', length: 100, unique: true, nullable: false })
+  @Column({ type: "varchar", length: 255, unique: true })
   email: string;
 
-  @Column({ enum: UserStatus, type: 'enum', default: UserStatus.ACTIVE })
-  status?: UserStatus;
+  @Column({ type: "varchar", length: 50, nullable: true })
+  phone?: string;
 
-  @CreateDateColumn({ type: 'timestamp', default: () => 'CURRENT_TIMESTAMP' })
-  createdAt: Date;
+  @Column({ type: "text", nullable: true })
+  avatar?: string;
 
-  @Column({ nullable: true })
-  lastActiveAt: Date;
+  @Column({ type: "boolean", default: false })
+  isAdmin: boolean;
 
-  @UpdateDateColumn({
-    type: 'timestamp',
-    default: () => 'CURRENT_TIMESTAMP',
-    onUpdate: 'CURRENT_TIMESTAMP',
-  })
-  updatedAt: Date;
+  @OneToMany(() => StudentGroup, (g) => g.student, { lazy: true })
+  studentGroupsAsStudent?: Promise<StudentGroup[]>;
 
-  @ManyToOne(() => Role, (role) => role.users)
-  @JoinColumn({ name: 'roleId' })
-  role: Role;
+  @OneToMany(() => StudentGroup, (g) => g.teacher, { lazy: true })
+  studentGroupsAsTeacher?: Promise<StudentGroup[]>;
 
-  @OneToMany(() => AuditLog, (auditLog) => auditLog.user)
-  auditLogs?: AuditLog[];
+  @OneToMany(() => LessonPlan, (lp) => lp.user, { lazy: true })
+  lessonPlans?: Promise<LessonPlan[]>;
 
-  @OneToMany(() => UserLibrary, (library) => library.user)
-  userLibrary?: UserLibrary[];
+  @OneToMany(() => GameResult, (gr) => gr.user, { lazy: true })
+  gameResults?: Promise<GameResult[]>;
 
-  @OneToMany(() => UserPermission, (userPermission) => userPermission.user)
-  userPermissions: UserPermission[];
+  @OneToMany(() => TaskResult, (tr) => tr.user, { lazy: true })
+  taskResults?: Promise<TaskResult[]>;
+
+  @OneToMany(() => QuestionResult, (qr) => qr.user, { lazy: true })
+  questionResults?: Promise<QuestionResult[]>;
 }

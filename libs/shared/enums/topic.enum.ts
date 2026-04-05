@@ -1,4 +1,4 @@
 export enum TopicStatus {
-    ACTIVE = 'active',
-    DELETED = 'deleted',
+  ACTIVE = "active",
+  DELETED = "deleted",
 }
