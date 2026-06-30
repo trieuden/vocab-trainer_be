@@ -1,38 +1,41 @@
 import { Injectable, NotFoundException } from "@nestjs/common";
-import { Task } from "@/entities";
 import { TaskRepo } from "@/repositories/task.repo";
-import { CreateTaskDto } from "./dtos/create-task.dto";
-import { UpdateTaskDto } from "./dtos/update-task.dto";
+import { CreateTaskDto, FindTaskDto, UpdateTaskDto } from "./dtos";
+import { Transaction } from "@/core/decorators/transaction.decorator";
 
 @Injectable()
 export class TaskService {
   constructor(private readonly repo: TaskRepo) {}
 
-  findAll(): Promise<Task[]> {
-    return this.repo.find({
+  async find(dto: FindTaskDto) {
+    const { pageSize, pageIndex } = dto;
+    const [data, total] = await this.repo.findAndCount({
       where: { isDeleted: false },
       order: { createdAt: "DESC" },
+      skip: (pageIndex ?? 1) - 1,
+      take: pageSize,
     });
+    return { data, total };
   }
 
-  findOne(id: string): Promise<Task | null> {
-    return this.repo.findOne({ where: { id, isDeleted: false } });
-  }
 
-  async create(dto: CreateTaskDto): Promise<Task> {
+  @Transaction()
+  async create(dto: CreateTaskDto) {
     const e = this.repo.create(dto);
     return this.repo.save(e);
   }
 
-  async update(id: string, dto: UpdateTaskDto): Promise<Task> {
-    const e = await this.findOne(id);
+  @Transaction()
+  async update(id: string, dto: UpdateTaskDto) {
+    const e = await this.repo.findOne({ where: { id, isDeleted: false } });
     if (!e) throw new NotFoundException("Task not found");
     Object.assign(e, dto);
     return this.repo.save(e);
   }
 
-  async remove(id: string): Promise<void> {
-    const e = await this.findOne(id);
+  @Transaction()
+  async remove(id: string) {
+    const e = await this.repo.findOne({ where: { id, isDeleted: false } });
     if (!e) throw new NotFoundException("Task not found");
     e.isDeleted = true;
     await this.repo.save(e);

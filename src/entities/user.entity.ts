@@ -1,4 +1,4 @@
-import { Entity, Column, OneToMany } from "typeorm";
+import { Entity, Column, OneToMany, BeforeUpdate, BeforeInsert } from "typeorm";
 import { Exclude } from "class-transformer";
 import { UserType } from "@/common/enums/EUser";
 import {
@@ -9,6 +9,7 @@ import {
   TaskResult,
   QuestionResult,
 } from "@/entities";
+import { hashPassword } from "libs/core/utils/password.utils";
 
 @Entity("users")
 export class User extends BaseEntity {
@@ -40,21 +41,30 @@ export class User extends BaseEntity {
   @Column({ type: "boolean", default: false })
   isAdmin: boolean;
 
-  @OneToMany(() => StudentGroup, (g) => g.student, { lazy: true })
-  studentGroupsAsStudent?: Promise<StudentGroup[]>;
+  @OneToMany(() => StudentGroup, (g) => g.student)
+  studentGroupsAsStudent?: StudentGroup[];
 
-  @OneToMany(() => StudentGroup, (g) => g.teacher, { lazy: true })
-  studentGroupsAsTeacher?: Promise<StudentGroup[]>;
+  @OneToMany(() => StudentGroup, (g) => g.teacher)
+  studentGroupsAsTeacher?: StudentGroup[];
 
-  @OneToMany(() => LessonPlan, (lp) => lp.user, { lazy: true })
-  lessonPlans?: Promise<LessonPlan[]>;
+  @OneToMany(() => LessonPlan, (lp) => lp.user)
+  lessonPlans?: LessonPlan[];
 
-  @OneToMany(() => GameResult, (gr) => gr.user, { lazy: true })
-  gameResults?: Promise<GameResult[]>;
+  @OneToMany(() => GameResult, (gr) => gr.user)
+  gameResults?: GameResult[];
 
-  @OneToMany(() => TaskResult, (tr) => tr.user, { lazy: true })
-  taskResults?: Promise<TaskResult[]>;
+  @OneToMany(() => TaskResult, (tr) => tr.user)
+  taskResults?: TaskResult[];
 
-  @OneToMany(() => QuestionResult, (qr) => qr.user, { lazy: true })
-  questionResults?: Promise<QuestionResult[]>;
+  @OneToMany(() => QuestionResult, (qr) => qr.user)
+  questionResults?: QuestionResult[];
+
+  @BeforeInsert()
+  @BeforeUpdate()
+  async hashPassword() {
+    if (this.password) {
+      const hashedPassword = await hashPassword(this.password)
+      this.password = hashedPassword
+    }
+  }
 }

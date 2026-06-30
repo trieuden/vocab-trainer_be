@@ -1,11 +1,14 @@
-import { Entity, Column, ManyToOne, JoinColumn } from "typeorm";
-import { LessonLevel, LessonPlanType } from "@/common/enums/ELessonPlan";
-import { User, BaseEntity } from "@/entities";
+import { Entity, Column, ManyToOne, OneToMany, JoinColumn } from "typeorm";
+import { NSLessonPlan } from "@/common/enums/ELessonPlan";
+import { User, BaseEntity, LessonPlanVocab, LessonPlanGrammar, LessonPlanListening, LessonPlanWriting } from "@/entities";
 
 @Entity("lesson_plans")
 export class LessonPlan extends BaseEntity {
-  @Column({ type: "enum", enum: LessonLevel })
-  level: LessonLevel;
+  @Column({ type: "varchar", length: 255 })
+  name: string;
+
+  @Column({ type: "enum", enum: NSLessonPlan.ELessonLevel })
+  level: NSLessonPlan.ELessonLevel;
 
   @Column({ type: "text", nullable: true })
   description?: string;
@@ -15,50 +18,19 @@ export class LessonPlan extends BaseEntity {
 
   @ManyToOne(() => User, (u) => u.lessonPlans, {
     onDelete: "CASCADE",
-    lazy: true,
   })
   @JoinColumn({ name: "userId" })
-  user: Promise<User>;
+  user: User;
 
-  @Column("uuid", { nullable: true })
-  warmUpId?: string;
+  @OneToMany(() => LessonPlanVocab, (v) => v.lessonPlan, { cascade: true })
+  lessonPlanVocabs?: LessonPlanVocab[];
 
-  @Column({ type: "enum", enum: LessonPlanType, nullable: true })
-  warmType?: LessonPlanType;
+  @OneToMany(() => LessonPlanGrammar, (g) => g.lessonPlan, { cascade: true })
+  lessonPlanGrammars?: LessonPlanGrammar[];
 
-  @Column("uuid", { nullable: true })
-  vocabId?: string;
+  @OneToMany(() => LessonPlanListening, (l) => l.lessonPlan, { cascade: true })
+  lessonPlanListenings?: LessonPlanListening[];
 
-  @Column({ type: "enum", enum: LessonPlanType, nullable: true })
-  vocabType?: LessonPlanType;
-
-  @Column("uuid", { nullable: true })
-  grammarId?: string;
-
-  @Column({ type: "enum", enum: LessonPlanType, nullable: true })
-  grammarType?: LessonPlanType;
-
-  @Column("uuid", { nullable: true })
-  listeningId?: string;
-
-  @Column({ type: "enum", enum: LessonPlanType, nullable: true })
-  listeningType?: LessonPlanType;
-
-  @Column("uuid", { nullable: true })
-  readingId?: string;
-
-  @Column({ type: "enum", enum: LessonPlanType, nullable: true })
-  readingType?: LessonPlanType;
-
-  @Column("uuid", { nullable: true })
-  writingId?: string;
-
-  @Column({ type: "enum", enum: LessonPlanType, nullable: true })
-  writingType?: LessonPlanType;
-
-  @Column("uuid", { nullable: true })
-  speakingId?: string;
-
-  @Column({ type: "enum", enum: LessonPlanType, nullable: true })
-  speakingType?: LessonPlanType;
+  @OneToMany(() => LessonPlanWriting, (w) => w.lessonPlan, { cascade: true })
+  lessonPlanWritings?: LessonPlanWriting[];
 }

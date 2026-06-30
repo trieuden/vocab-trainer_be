@@ -1,7 +1,7 @@
 /** Dạng câu hỏi — bảng `questions` */
 export enum QuestionType {
-  MULTIPLE_CHOICE = "multiple_choice",
-  FILL_BLANK = "fill_blank",
-  LISTENING = "listening",
-  OTHER = "other",
+  MULTIPLE_CHOICE = "MULTIPLE_CHOICE",
+  FILL_BLANK = "FILL_BLANK",
+  LISTENING = "LISTENING",
+  OTHER = "OTHER",
 }

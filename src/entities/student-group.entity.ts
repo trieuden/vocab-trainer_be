@@ -8,20 +8,18 @@ export class StudentGroup extends BaseEntity {
 
   @ManyToOne(() => User, (u) => u.studentGroupsAsStudent, {
     onDelete: "CASCADE",
-    lazy: true,
   })
   @JoinColumn({ name: "studentId" })
-  student: Promise<User>;
+  student: User;
 
   @Column("uuid")
   teacherId: string;
 
   @ManyToOne(() => User, (u) => u.studentGroupsAsTeacher, {
     onDelete: "CASCADE",
-    lazy: true,
   })
   @JoinColumn({ name: "teacherId" })
-  teacher: Promise<User>;
+  teacher: User;
 
   @Column({ type: "varchar", length: 255 })
   name: string;

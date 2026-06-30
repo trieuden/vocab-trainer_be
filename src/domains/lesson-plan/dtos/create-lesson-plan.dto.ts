@@ -1,11 +1,70 @@
 import { ApiProperty, ApiPropertyOptional } from "@nestjs/swagger";
-import { IsEnum, IsOptional, IsString, IsUUID } from "class-validator";
-import { LessonLevel, LessonPlanType } from "@/common/enums/ELessonPlan";
+import {
+  IsArray, IsEnum, IsOptional, IsString, IsUUID,
+  ValidateNested, ValidateIf,
+} from "class-validator";
+import { Type } from "class-transformer";
+import { NSLessonPlan } from "@/common/enums";
+import { GameType } from "@/common/enums/EGame";
+
+export class WordDto {
+  @ApiProperty()
+  @IsString()
+  word: string;
+
+  @ApiPropertyOptional()
+  @IsOptional()
+  @IsString()
+  audio?: string;
+
+  @ApiPropertyOptional()
+  @IsOptional()
+  @IsString()
+  phonetic?: string;
+
+  @ApiPropertyOptional()
+  @IsOptional()
+  @IsString()
+  definition?: string;
+}
+
+export class SectionInputDto {
+  @ApiPropertyOptional({ type: [WordDto] })
+  @IsOptional()
+  @IsArray()
+  @ValidateNested({ each: true })
+  @Type(() => WordDto)
+  words?: WordDto[];
+
+  @ApiPropertyOptional({ enum: GameType })
+  @IsOptional()
+  @IsEnum(GameType)
+  gameType?: GameType;
+
+  @ApiPropertyOptional()
+  @IsOptional()
+  @IsString()
+  taskName?: string;
+
+  @ApiPropertyOptional()
+  @IsOptional()
+  @IsUUID()
+  refId?: string;
+
+  @ApiPropertyOptional({ enum: NSLessonPlan.ELessonPlanType })
+  @IsOptional()
+  @IsEnum(NSLessonPlan.ELessonPlanType)
+  refType?: NSLessonPlan.ELessonPlanType;
+}
 
 export class CreateLessonPlanDto {
-  @ApiProperty({ enum: LessonLevel })
-  @IsEnum(LessonLevel)
-  level: LessonLevel;
+  @ApiProperty()
+  @IsString()
+  name: string;
+
+  @ApiProperty({ enum: NSLessonPlan.ELessonLevel })
+  @IsEnum(NSLessonPlan.ELessonLevel)
+  level: NSLessonPlan.ELessonLevel;
 
   @ApiPropertyOptional()
   @IsOptional()
@@ -16,73 +75,45 @@ export class CreateLessonPlanDto {
   @IsUUID()
   userId: string;
 
-  @ApiPropertyOptional()
+  @ApiPropertyOptional({ type: SectionInputDto })
   @IsOptional()
-  @IsUUID()
-  warmUpId?: string;
+  @ValidateNested()
+  @Type(() => SectionInputDto)
+  warmUp?: SectionInputDto;
 
-  @ApiPropertyOptional({ enum: LessonPlanType })
+  @ApiPropertyOptional({ type: SectionInputDto })
   @IsOptional()
-  @IsEnum(LessonPlanType)
-  warmType?: LessonPlanType;
+  @ValidateNested()
+  @Type(() => SectionInputDto)
+  vocab?: SectionInputDto;
 
-  @ApiPropertyOptional()
+  @ApiPropertyOptional({ type: SectionInputDto })
   @IsOptional()
-  @IsUUID()
-  vocabId?: string;
+  @ValidateNested()
+  @Type(() => SectionInputDto)
+  grammar?: SectionInputDto;
 
-  @ApiPropertyOptional({ enum: LessonPlanType })
+  @ApiPropertyOptional({ type: SectionInputDto })
   @IsOptional()
-  @IsEnum(LessonPlanType)
-  vocabType?: LessonPlanType;
+  @ValidateNested()
+  @Type(() => SectionInputDto)
+  listening?: SectionInputDto;
 
-  @ApiPropertyOptional()
+  @ApiPropertyOptional({ type: SectionInputDto })
   @IsOptional()
-  @IsUUID()
-  grammarId?: string;
+  @ValidateNested()
+  @Type(() => SectionInputDto)
+  reading?: SectionInputDto;
 
-  @ApiPropertyOptional({ enum: LessonPlanType })
+  @ApiPropertyOptional({ type: SectionInputDto })
   @IsOptional()
-  @IsEnum(LessonPlanType)
-  grammarType?: LessonPlanType;
+  @ValidateNested()
+  @Type(() => SectionInputDto)
+  writing?: SectionInputDto;
 
-  @ApiPropertyOptional()
+  @ApiPropertyOptional({ type: SectionInputDto })
   @IsOptional()
-  @IsUUID()
-  listeningId?: string;
-
-  @ApiPropertyOptional({ enum: LessonPlanType })
-  @IsOptional()
-  @IsEnum(LessonPlanType)
-  listeningType?: LessonPlanType;
-
-  @ApiPropertyOptional()
-  @IsOptional()
-  @IsUUID()
-  readingId?: string;
-
-  @ApiPropertyOptional({ enum: LessonPlanType })
-  @IsOptional()
-  @IsEnum(LessonPlanType)
-  readingType?: LessonPlanType;
-
-  @ApiPropertyOptional()
-  @IsOptional()
-  @IsUUID()
-  writingId?: string;
-
-  @ApiPropertyOptional({ enum: LessonPlanType })
-  @IsOptional()
-  @IsEnum(LessonPlanType)
-  writingType?: LessonPlanType;
-
-  @ApiPropertyOptional()
-  @IsOptional()
-  @IsUUID()
-  speakingId?: string;
-
-  @ApiPropertyOptional({ enum: LessonPlanType })
-  @IsOptional()
-  @IsEnum(LessonPlanType)
-  speakingType?: LessonPlanType;
+  @ValidateNested()
+  @Type(() => SectionInputDto)
+  speaking?: SectionInputDto;
 }

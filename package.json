@@ -31,6 +31,7 @@
     "dev:docker": "npm run docker:down && npm run docker:dev"
   },
   "dependencies": {
+    "@google/genai": "^1.48.0",
     "@nestjs/common": "^11.0.1",
     "@nestjs/config": "^4.0.2",
     "@nestjs/core": "^11.0.1",
@@ -52,7 +53,8 @@
     "rxjs": "^7.8.1",
     "streamifier": "^0.1.1",
     "swagger-ui-express": "^5.0.1",
-    "typeorm": "^0.3.26"
+    "typeorm": "^0.3.26",
+    "typeorm-transactional": "^0.5.0"
   },
   "devDependencies": {
     "@eslint/eslintrc": "^3.2.0",

@@ -30,12 +30,12 @@ export class Question extends BaseEntity {
   @Column({ type: "jsonb", nullable: true })
   images?: string[];
 
-  @OneToMany(() => TaskQuestion, (tq) => tq.question, { lazy: true })
-  taskQuestions?: Promise<TaskQuestion[]>;
+  @OneToMany(() => TaskQuestion, (tq) => tq.question)
+  taskQuestions?: TaskQuestion[];
 
-  @OneToMany(() => QuestionResult, (qr) => qr.question, { lazy: true })
-  questionResults?: Promise<QuestionResult[]>;
+  @OneToMany(() => QuestionResult, (qr) => qr.question)
+  questionResults?: QuestionResult[];
 
-  @OneToMany(() => QuestionAnswer, (qa) => qa.question, { lazy: true })
-  questionAnswers?: Promise<QuestionAnswer[]>;
+  @OneToMany(() => QuestionAnswer, (qa) => qa.question)
+  questionAnswers?: QuestionAnswer[];
 }

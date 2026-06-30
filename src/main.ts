@@ -2,9 +2,18 @@ import { NestFactory, Reflector } from "@nestjs/core";
 import { SwaggerModule, DocumentBuilder } from "@nestjs/swagger";
 import { AppModule } from "./app.module";
 import { ValidationPipe, ClassSerializerInterceptor } from "@nestjs/common";
+import {
+  initializeTransactionalContext,
+  StorageDriver,
+} from "typeorm-transactional";
+
+initializeTransactionalContext({
+  storageDriver: StorageDriver.ASYNC_LOCAL_STORAGE,
+});
 
 async function bootstrap() {
   const app = await NestFactory.create(AppModule);
+  app.setGlobalPrefix("api");
 
   app.enableCors({
     origin: ["http://localhost:3001", "http://127.0.0.1:3001"],
@@ -40,8 +49,11 @@ async function bootstrap() {
   app.useGlobalInterceptors(new ClassSerializerInterceptor(app.get(Reflector)));
 
   const document = SwaggerModule.createDocument(app, config);
-  SwaggerModule.setup("api", app, document);
+  SwaggerModule.setup("docs", app, document);
 
-  await app.listen(process.env.PORT ?? 3000);
+  const port = Number(process.env.PORT ?? 3000);
+  await app.listen(port);
+  console.log(`BE running at http://localhost:${port}`);
+  console.log(`swagger running at http://localhost:${port}/docs`);
 }
 bootstrap();

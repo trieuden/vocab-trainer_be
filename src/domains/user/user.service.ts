@@ -1,114 +1,109 @@
-import {
-  BadRequestException,
-  Injectable,
-  NotFoundException,
-} from "@nestjs/common";
+import { BadRequestException, Injectable, NotFoundException } from "@nestjs/common";
 import * as bcrypt from "bcrypt";
-import { User } from "@/entities";
 import { UserRepo } from "@/repositories/user.repo";
-import { CreateUserDto } from "./dtos/create-user.dto";
-import { UpdateUserDto } from "./dtos/update-user.dto";
-import { hashPassword } from "libs/core/utils/password.utils";
+import { CreateUserDto, FindUserDto, UpdateUserDto } from "./dtos";
+import { Transaction } from "@/core/decorators/transaction.decorator";
+import { Like } from "typeorm";
 
 @Injectable()
 export class UserService {
-  constructor(private readonly repo: UserRepo) {}
+    constructor(private readonly repo: UserRepo) {}
 
-  findAll(): Promise<User[]> {
-    return this.repo.find({
-      where: { isDeleted: false },
-      order: { createdAt: "DESC" },
-    });
-  }
+    async find(dto: FindUserDto) {
+        try {
+            const { pageSize, pageIndex, ...body } = dto;
+            let where : any = {}
 
-  findOne(id: string): Promise<User | null> {
-    return this.repo.findOne({ where: { id, isDeleted: false } });
-  }
+            if(body.username) where.username =Like(`%${body.username}%`);
+            if(body.email) where.email =Like(`%${body.email}%`);
+            if(body.phone) where.phone =Like(`%${body.phone}%`);
+            if(body.type) where.type = body.type;
+            if(body.name) where.name =Like(`%${body.name}%`);
 
-  findById(id: string): Promise<User | null> {
-    return this.findOne(id);
-  }
+            const [data, total] = await this.repo.findAndCount({
+                where,
+                order: { createdAt: "DESC" },
+                skip: (pageIndex ?? 1) - 1,
+                take: pageSize,
+            });
+            return {
+                data,
+                total,
+            };
+        } catch (error) {
+            console.log(error);
 
-  private async findByUsername(username: string): Promise<User | null> {
-    return this.repo.findOne({ where: { username, isDeleted: false } });
-  }
-
-  private async findByEmail(email: string): Promise<User | null> {
-    return this.repo.findOne({ where: { email, isDeleted: false } });
-  }
-
-  async create(dto: CreateUserDto): Promise<User> {
-    const existing = await this.findByEmail(dto.email);
-    if (existing) throw new BadRequestException("Email already exists");
-    const existingUser = await this.findByUsername(dto.username);
-    if (existingUser) throw new BadRequestException("Username already exists");
-
-    const password = await hashPassword(dto.password);
-    const user = this.repo.create({
-      ...dto,
-      password,
-      isAdmin: dto.isAdmin ?? false,
-    });
-    return this.repo.save(user);
-  }
-
-  async update(id: string, dto: UpdateUserDto): Promise<User> {
-    const user = await this.findOne(id);
-    if (!user) throw new NotFoundException("User not found");
-
-    if (dto.email && dto.email !== user.email) {
-      const taken = await this.findByEmail(dto.email);
-      if (taken) throw new BadRequestException("Email already exists");
-    }
-    if (dto.username && dto.username !== user.username) {
-      const taken = await this.findByUsername(dto.username);
-      if (taken) throw new BadRequestException("Username already exists");
+            throw new BadRequestException(error.message);
+        }
     }
 
-    let password = user.password;
-    if (dto.password) password = await hashPassword(dto.password);
+    @Transaction()
+    async create(dto: CreateUserDto) {
+        const byEmail = await this.repo.findOne({
+            where: { email: dto.email, isDeleted: false },
+        });
 
-    Object.assign(user, {
-      ...dto,
-      password: dto.password ? password : user.password,
-    });
-    return this.repo.save(user);
-  }
+        if (byEmail) throw new BadRequestException("Email already exists");
+        const byUser = await this.repo.findOne({
+            where: { username: dto.username, isDeleted: false },
+        });
+        if (byUser) throw new BadRequestException("Username already exists");
 
-  async remove(id: string): Promise<void> {
-    const user = await this.findOne(id);
-    if (!user) throw new NotFoundException("User not found");
-    user.isDeleted = true;
-    await this.repo.save(user);
-  }
+        const user = this.repo.create({
+            ...dto,
+            isAdmin: dto.isAdmin ?? false,
+        });
+        return this.repo.save(user);
+    }
 
-  async validateUser(
-    username: string,
-    plainPassword: string,
-  ): Promise<User | null> {
-    const user = await this.repo.findOne({
-      where: { username, isDeleted: false },
-    });
-    if (!user) return null;
-    const ok = await bcrypt.compare(plainPassword, user.password);
-    return ok ? user : null;
-  }
+    @Transaction()
+    async update(id: string, dto: UpdateUserDto) {
+        const user = await this.repo.findOne({
+            where: { id, isDeleted: false },
+        });
+        if (!user) throw new NotFoundException("User not found");
 
-  async updateLastActiveAt(id: string): Promise<void> {
-    await this.repo.update({ id }, { lastActiveAt: new Date() });
-  }
+        if (dto.email && dto.email !== user.email) {
+            const taken = await this.repo.findOne({
+                where: { email: dto.email, isDeleted: false },
+            });
+            if (taken) throw new BadRequestException("Email already exists");
+        }
+        if (dto.username && dto.username !== user.username) {
+            const taken = await this.repo.findOne({
+                where: { username: dto.username, isDeleted: false },
+            });
+            if (taken) throw new BadRequestException("Username already exists");
+        }
 
-  async search(q?: string): Promise<User[]> {
-    if (!q?.trim()) return this.findAll();
-    const term = `%${q.trim()}%`;
-    return this.repo
-      .createQueryBuilder("u")
-      .where("u.isDeleted = :d", { d: false })
-      .andWhere(
-        "(u.username ILIKE :t OR u.name ILIKE :t OR u.email ILIKE :t OR u.phone ILIKE :t)",
-        { t: term },
-      )
-      .orderBy("u.createdAt", "DESC")
-      .getMany();
-  }
+        const { password: plainPassword, ...rest } = dto;
+        Object.assign(user, rest);
+        if (plainPassword !== undefined && plainPassword !== "") {
+            user.password = plainPassword;
+        }
+        return this.repo.save(user);
+    }
+
+    @Transaction()
+    async remove(id: string) {
+        const user = await this.repo.findOne({
+            where: { id, isDeleted: false },
+        });
+        if (!user) throw new NotFoundException("User not found");
+        user.isDeleted = true;
+        await this.repo.save(user);
+    }
+
+    async validateUser(username: string, plainPassword: string) {
+        const user = await this.repo.findOne({
+            where: { username, isDeleted: false },
+        });
+        if (!user) return null;
+        const ok = await bcrypt.compare(plainPassword, user.password);
+        return ok ? user : null;
+    }
+
+    async updateLastActiveAt(id: string) {
+        await this.repo.update({ id }, { lastActiveAt: new Date() });
+    }
 }

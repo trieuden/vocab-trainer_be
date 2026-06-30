@@ -6,19 +6,18 @@ export class GameResult extends BaseEntity {
   @Column("uuid")
   gameId: string;
 
-  @ManyToOne(() => Game, (g) => g.results, { onDelete: "CASCADE", lazy: true })
+  @ManyToOne(() => Game, (g) => g.results, { onDelete: "CASCADE" })
   @JoinColumn({ name: "gameId" })
-  game: Promise<Game>;
+  game: Game;
 
   @Column("uuid")
   userId: string;
 
   @ManyToOne(() => User, (u) => u.gameResults, {
     onDelete: "CASCADE",
-    lazy: true,
   })
   @JoinColumn({ name: "userId" })
-  user: Promise<User>;
+  user: User;
 
   @Column({ type: "float" })
   score: number;

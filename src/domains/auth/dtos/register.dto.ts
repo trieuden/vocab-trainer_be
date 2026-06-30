@@ -8,6 +8,7 @@ import {
   Length,
   MinLength,
   Matches,
+  IsBoolean,
 } from "class-validator";
 import { UserType } from "@/common/enums/EUser";
 
@@ -20,9 +21,9 @@ export class RegisterDto {
   @ApiProperty()
   @IsString()
   @MinLength(6)
-  @Matches(/^(?=.*[a-z])(?=.*[A-Z])(?=.*\d).+$/, {
-    message: "Password must contain uppercase, lowercase, and number.",
-  })
+  // @Matches(/^(?=.*[a-z])(?=.*[A-Z])(?=.*\d).+$/, {
+  //   message: "Password must contain uppercase, lowercase, and number.",
+  // })
   password: string;
 
   @ApiProperty()
@@ -38,4 +39,15 @@ export class RegisterDto {
   @IsOptional()
   @IsEnum(UserType)
   type?: UserType;
+
+  @ApiPropertyOptional()
+  @IsOptional()
+  @IsBoolean()
+  isAdmin?: boolean;
+
+  @ApiPropertyOptional()
+  @IsOptional()
+  @IsString()
+  phone?: string;
+
 }

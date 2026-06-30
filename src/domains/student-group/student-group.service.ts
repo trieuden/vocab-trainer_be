@@ -1,38 +1,45 @@
 import { Injectable, NotFoundException } from "@nestjs/common";
-import { StudentGroup } from "@/entities";
 import { StudentGroupRepo } from "@/repositories/student-group.repo";
-import { CreateStudentGroupDto } from "./dtos/create-student-group.dto";
-import { UpdateStudentGroupDto } from "./dtos/update-student-group.dto";
+import {
+  CreateStudentGroupDto,
+  FindStudentGroupDto,
+  UpdateStudentGroupDto,
+} from "./dtos";
+import { Transaction } from "@/core/decorators/transaction.decorator";
 
 @Injectable()
 export class StudentGroupService {
   constructor(private readonly repo: StudentGroupRepo) {}
 
-  findAll(): Promise<StudentGroup[]> {
-    return this.repo.find({
+  async find(dto: FindStudentGroupDto) {
+    const { pageSize, pageIndex } = dto;
+    const [data, total] = await this.repo.findAndCount({
       where: { isDeleted: false },
       order: { createdAt: "DESC" },
+      skip: (pageIndex ?? 1) - 1,
+      take: pageSize,
     });
+    return { data, total };
   }
 
-  findOne(id: string): Promise<StudentGroup | null> {
-    return this.repo.findOne({ where: { id, isDeleted: false } });
-  }
 
-  async create(dto: CreateStudentGroupDto): Promise<StudentGroup> {
+  @Transaction()
+  async create(dto: CreateStudentGroupDto) {
     const e = this.repo.create(dto);
     return this.repo.save(e);
   }
 
-  async update(id: string, dto: UpdateStudentGroupDto): Promise<StudentGroup> {
-    const e = await this.findOne(id);
+  @Transaction()
+  async update(id: string, dto: UpdateStudentGroupDto) {
+    const e = await this.repo.findOne({ where: { id, isDeleted: false } });
     if (!e) throw new NotFoundException("StudentGroup not found");
     Object.assign(e, dto);
     return this.repo.save(e);
   }
 
-  async remove(id: string): Promise<void> {
-    const e = await this.findOne(id);
+  @Transaction()
+  async remove(id: string) {
+    const e = await this.repo.findOne({ where: { id, isDeleted: false } });
     if (!e) throw new NotFoundException("StudentGroup not found");
     e.isDeleted = true;
     await this.repo.save(e);

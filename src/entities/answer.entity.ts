@@ -9,6 +9,6 @@ export class Answer extends BaseEntity {
   @Column({ name: "is_right", type: "boolean", default: false })
   isRight: boolean;
 
-  @OneToMany(() => QuestionAnswer, (qa) => qa.answer, { lazy: true })
-  questionAnswers?: Promise<QuestionAnswer[]>;
+  @OneToMany(() => QuestionAnswer, (qa) => qa.answer)
+  questionAnswers?: QuestionAnswer[];
 }

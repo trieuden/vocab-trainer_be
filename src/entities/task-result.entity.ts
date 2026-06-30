@@ -8,20 +8,18 @@ export class TaskResult extends BaseEntity {
 
   @ManyToOne(() => Task, (t) => t.taskResults, {
     onDelete: "CASCADE",
-    lazy: true,
   })
   @JoinColumn({ name: "taskId" })
-  task: Promise<Task>;
+  task: Task;
 
   @Column("uuid")
   userId: string;
 
   @ManyToOne(() => User, (u) => u.taskResults, {
     onDelete: "CASCADE",
-    lazy: true,
   })
   @JoinColumn({ name: "userId" })
-  user: Promise<User>;
+  user: User;
 
   @Column({ type: "float" })
   score: number;

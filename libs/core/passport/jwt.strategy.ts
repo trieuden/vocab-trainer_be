@@ -24,7 +24,7 @@ export class JwtStrategy extends PassportStrategy(Strategy, "jwt") {
 
   async validate(payload: JwtPayload): Promise<any> {
     // Lấy thông tin user đầy đủ từ database
-    const user = await this.userService.findById(payload.sub);
+    const user = await this.userService.find({ id: payload.sub });
     return user;
   }
 }

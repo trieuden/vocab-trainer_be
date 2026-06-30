@@ -6,3 +6,8 @@ export * from "./task.repo";
 export * from "./task-result.repo";
 export * from "./lesson-plan.repo";
 export * from "./student-group.repo";
+export * from "./word.repo";
+export * from "./lesson-plan-vocab.repo";
+export * from "./lesson-plan-grammar.repo";
+export * from "./lesson-plan-listening.repo";
+export * from "./lesson-plan-writing.repo";

@@ -8,18 +8,16 @@ export class QuestionAnswer extends BaseEntity {
 
   @ManyToOne(() => Answer, (a) => a.questionAnswers, {
     onDelete: "CASCADE",
-    lazy: true,
   })
   @JoinColumn({ name: "answerId" })
-  answer: Promise<Answer>;
+  answer: Answer;
 
   @Column("uuid")
   questionId: string;
 
   @ManyToOne(() => Question, (q) => q.questionAnswers, {
     onDelete: "CASCADE",
-    lazy: true,
   })
   @JoinColumn({ name: "questionId" })
-  question: Promise<Question>;
+  question: Question;
 }

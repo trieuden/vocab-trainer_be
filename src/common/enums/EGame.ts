@@ -1,7 +1,7 @@
 /** Loại game — bảng `games` */
 export enum GameType {
-  FLASHCARD = "flashcard",
-  QUIZ = "quiz",
-  MATCHING = "matching",
-  OTHER = "other",
+  FLASHCARD = "FLASHCARD",
+  QUIZ = "QUIZ",
+  MATCHING = "MATCHING",
+  OTHER = "OTHER",
 }

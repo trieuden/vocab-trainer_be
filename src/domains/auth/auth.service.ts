@@ -2,7 +2,7 @@ import { Injectable } from "@nestjs/common";
 import { JwtService } from "@nestjs/jwt";
 import { User } from "@/entities";
 import { UserService } from "@/domains/user/user.service";
-import { RegisterDto } from "./dtos/register.dto";
+import { RegisterDto } from "./dtos";
 import { UserType } from "@/common/enums/EUser";
 
 @Injectable()
@@ -12,21 +12,19 @@ export class AuthService {
     private readonly jwtService: JwtService,
   ) {}
 
-  register(dto: RegisterDto): Promise<User> {
+  register(dto: RegisterDto) {
     return this.userService.create({
       username: dto.username,
       password: dto.password,
       name: dto.name,
       email: dto.email,
       type: dto.type ?? UserType.STUDENT,
-      isAdmin: false,
+      isAdmin: dto.isAdmin ?? false,
+      phone: dto.phone,
     });
   }
 
-  login(req: { user: User }): {
-    accessToken: string;
-    refreshToken: string;
-  } {
+  async login(req: { user: User }){
     const user = req.user;
     const payload = { username: user.username, sub: user.id };
     const accessToken = this.jwtService.sign(payload, {
@@ -37,6 +35,9 @@ export class AuthService {
       secret: process.env.JWT_SECRET || "default_secret_key",
       expiresIn: process.env.REFRESH_TOKEN_EXPIRES_IN || "7d",
     });
-    return { accessToken, refreshToken };
+
+    await this.userService.updateLastActiveAt(user.id);
+
+    return { accessToken, refreshToken, user };
   }
 }

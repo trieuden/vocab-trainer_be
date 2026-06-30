@@ -11,3 +11,8 @@ export * from "./question.entity";
 export * from "./question-result.entity";
 export * from "./answer.entity";
 export * from "./question-answer.entity";
+export * from "./word.entity";
+export * from "./lesson-plan-vocab.entity";
+export * from "./lesson-plan-grammar.entity";
+export * from "./lesson-plan-listening.entity";
+export * from "./lesson-plan-writing.entity";

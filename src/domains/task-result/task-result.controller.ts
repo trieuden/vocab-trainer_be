@@ -7,29 +7,24 @@ import {
   Patch,
   Post,
 } from "@nestjs/common";
-import { ApiTags } from "@nestjs/swagger";
-import { TaskResult } from "@/entities";
+import { ApiBearerAuth, ApiOperation, ApiTags } from "@nestjs/swagger";
 import { TaskResultService } from "./task-result.service";
-import { CreateTaskResultDto } from "./dtos/create-task-result.dto";
-import { UpdateTaskResultDto } from "./dtos/update-task-result.dto";
+import { CreateTaskResultDto, FindTaskResultDto, UpdateTaskResultDto } from "./dtos";
 
+@ApiBearerAuth("JWT-auth")
 @ApiTags("Task results")
 @Controller("task-results")
 export class TaskResultController {
   constructor(private readonly service: TaskResultService) {}
 
-  @Get()
-  findAll(): Promise<TaskResult[]> {
-    return this.service.findAll();
-  }
-
-  @Get(":id")
-  findOne(@Param("id") id: string): Promise<TaskResult | null> {
-    return this.service.findOne(id);
+  @Post("list")
+  @ApiOperation({ summary: "Danh sách" })
+  find(@Body() dto: FindTaskResultDto) {
+    return this.service.find(dto);
   }
 
   @Post()
-  create(@Body() dto: CreateTaskResultDto): Promise<TaskResult> {
+  create(@Body() dto: CreateTaskResultDto) {
     return this.service.create(dto);
   }
 
@@ -37,12 +32,12 @@ export class TaskResultController {
   update(
     @Param("id") id: string,
     @Body() dto: UpdateTaskResultDto,
-  ): Promise<TaskResult> {
+  ) {
     return this.service.update(id, dto);
   }
 
   @Delete(":id")
-  remove(@Param("id") id: string): Promise<void> {
+  remove(@Param("id") id: string) {
     return this.service.remove(id);
   }
 }

@@ -7,39 +7,35 @@ import {
   Patch,
   Post,
 } from "@nestjs/common";
-import { ApiTags } from "@nestjs/swagger";
-import { Game } from "@/entities";
+import { ApiBearerAuth, ApiOperation, ApiTags } from "@nestjs/swagger";
 import { GameService } from "./game.service";
-import { CreateGameDto } from "./dtos/create-game.dto";
-import { UpdateGameDto } from "./dtos/update-game.dto";
+import { CreateGameDto, FindGameDto, UpdateGameDto } from "./dtos";
 
+@ApiBearerAuth("JWT-auth")
 @ApiTags("Games")
 @Controller("games")
 export class GameController {
   constructor(private readonly service: GameService) {}
 
-  @Get()
-  findAll(): Promise<Game[]> {
-    return this.service.findAll();
+  @Post("list")
+  @ApiOperation({ summary: "Danh sách" })
+  find(@Body() dto: FindGameDto) {
+    return this.service.find(dto);
   }
 
-  @Get(":id")
-  findOne(@Param("id") id: string): Promise<Game | null> {
-    return this.service.findOne(id);
-  }
 
   @Post()
-  create(@Body() dto: CreateGameDto): Promise<Game> {
+  create(@Body() dto: CreateGameDto) {
     return this.service.create(dto);
   }
 
   @Patch(":id")
-  update(@Param("id") id: string, @Body() dto: UpdateGameDto): Promise<Game> {
+  update(@Param("id") id: string, @Body() dto: UpdateGameDto) {
     return this.service.update(id, dto);
   }
 
   @Delete(":id")
-  remove(@Param("id") id: string): Promise<void> {
+  remove(@Param("id") id: string) {
     return this.service.remove(id);
   }
 }

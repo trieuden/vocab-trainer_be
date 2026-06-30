@@ -7,39 +7,35 @@ import {
   Patch,
   Post,
 } from "@nestjs/common";
-import { ApiTags } from "@nestjs/swagger";
-import { Task } from "@/entities";
+import { ApiBearerAuth, ApiOperation, ApiTags } from "@nestjs/swagger";
 import { TaskService } from "./task.service";
-import { CreateTaskDto } from "./dtos/create-task.dto";
-import { UpdateTaskDto } from "./dtos/update-task.dto";
+import { CreateTaskDto, FindTaskDto, UpdateTaskDto } from "./dtos";
 
+@ApiBearerAuth("JWT-auth")
 @ApiTags("Tasks")
 @Controller("tasks")
 export class TaskController {
   constructor(private readonly service: TaskService) {}
 
-  @Get()
-  findAll(): Promise<Task[]> {
-    return this.service.findAll();
+  @Post("list")
+  @ApiOperation({ summary: "Danh sách" })
+  find(@Body() dto: FindTaskDto) {
+    return this.service.find(dto);
   }
 
-  @Get(":id")
-  findOne(@Param("id") id: string): Promise<Task | null> {
-    return this.service.findOne(id);
-  }
 
   @Post()
-  create(@Body() dto: CreateTaskDto): Promise<Task> {
+  create(@Body() dto: CreateTaskDto) {
     return this.service.create(dto);
   }
 
   @Patch(":id")
-  update(@Param("id") id: string, @Body() dto: UpdateTaskDto): Promise<Task> {
+  update(@Param("id") id: string, @Body() dto: UpdateTaskDto) {
     return this.service.update(id, dto);
   }
 
   @Delete(":id")
-  remove(@Param("id") id: string): Promise<void> {
+  remove(@Param("id") id: string) {
     return this.service.remove(id);
   }
 }
