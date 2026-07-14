@@ -27,4 +27,14 @@ export type GenerateImageResult = {
   raw: unknown;
 };
 
+export type GenerateWrongAnswersDto = {
+  question: string;
+  correctAnswer: string;
+};
+
+export type GenerateWrongAnswersResult = {
+  wrongAnswers: string[];
+  raw: unknown;
+};
+
 

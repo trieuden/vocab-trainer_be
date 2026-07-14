@@ -16,3 +16,4 @@ export * from "./lesson-plan-vocab.entity";
 export * from "./lesson-plan-grammar.entity";
 export * from "./lesson-plan-listening.entity";
 export * from "./lesson-plan-writing.entity";
+export * from "./lesson-plan-warmup.entity";

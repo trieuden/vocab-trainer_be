@@ -1,6 +1,6 @@
 import { Entity, Column, ManyToOne, OneToMany, JoinColumn } from "typeorm";
 import { NSLessonPlan } from "@/common/enums/ELessonPlan";
-import { User, BaseEntity, LessonPlanVocab, LessonPlanGrammar, LessonPlanListening, LessonPlanWriting } from "@/entities";
+import { User, BaseEntity, LessonPlanVocab, LessonPlanGrammar, LessonPlanListening, LessonPlanWriting, LessonPlanWarmup } from "@/entities";
 
 @Entity("lesson_plans")
 export class LessonPlan extends BaseEntity {
@@ -33,4 +33,7 @@ export class LessonPlan extends BaseEntity {
 
   @OneToMany(() => LessonPlanWriting, (w) => w.lessonPlan, { cascade: true })
   lessonPlanWritings?: LessonPlanWriting[];
+
+  @OneToMany(() => LessonPlanWarmup, (w) => w.lessonPlan, { cascade: true })
+  lessonPlanWarmups?: LessonPlanWarmup[];
 }

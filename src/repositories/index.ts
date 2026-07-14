@@ -11,3 +11,8 @@ export * from "./lesson-plan-vocab.repo";
 export * from "./lesson-plan-grammar.repo";
 export * from "./lesson-plan-listening.repo";
 export * from "./lesson-plan-writing.repo";
+export * from "./lesson-plan-warmup.repo";
+export * from "./question.repo";
+export * from "./answer.repo";
+export * from "./task-question.repo";
+export * from "./question-answer.repo";

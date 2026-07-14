@@ -1,11 +1,16 @@
 import { ApiProperty, ApiPropertyOptional } from "@nestjs/swagger";
 import {
   IsArray, IsEnum, IsOptional, IsString, IsUUID,
-  ValidateNested, ValidateIf,
+  ValidateNested,
 } from "class-validator";
 import { Type } from "class-transformer";
 import { NSLessonPlan } from "@/common/enums";
 import { GameType } from "@/common/enums/EGame";
+
+export enum TaskQuestionType {
+  MULTIPLE_CHOICE = "MULTIPLE_CHOICE",
+  ESSAY = "ESSAY",
+}
 
 export class WordDto {
   @ApiProperty()
@@ -28,6 +33,21 @@ export class WordDto {
   definition?: string;
 }
 
+export class MultipleChoiceQuestionDto {
+  @ApiProperty()
+  @IsString()
+  question: string;
+
+  @ApiProperty()
+  @IsString()
+  correctAnswer: string;
+
+  @ApiPropertyOptional({ type: [String] })
+  @IsOptional()
+  @IsArray()
+  wrongAnswers?: string[];
+}
+
 export class SectionInputDto {
   @ApiPropertyOptional({ type: [WordDto] })
   @IsOptional()
@@ -45,6 +65,18 @@ export class SectionInputDto {
   @IsOptional()
   @IsString()
   taskName?: string;
+
+  @ApiPropertyOptional({ enum: TaskQuestionType })
+  @IsOptional()
+  @IsEnum(TaskQuestionType)
+  taskType?: TaskQuestionType;
+
+  @ApiPropertyOptional({ type: [MultipleChoiceQuestionDto] })
+  @IsOptional()
+  @IsArray()
+  @ValidateNested({ each: true })
+  @Type(() => MultipleChoiceQuestionDto)
+  questions?: MultipleChoiceQuestionDto[];
 
   @ApiPropertyOptional()
   @IsOptional()

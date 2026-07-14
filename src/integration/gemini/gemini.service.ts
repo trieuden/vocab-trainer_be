@@ -2,7 +2,7 @@ import { Injectable } from "@nestjs/common";
 import { readFile } from "fs/promises";
 import { join } from "path";
 import { geminiAPI } from "@/helpers/gemini-api.helper";
-import { GenerateImageResult, GenerateTextResult, GeminiImageInput } from "./dtos";
+import { GenerateImageResult, GenerateTextResult, GeminiImageInput, GenerateWrongAnswersDto } from "./dtos";
 import { GenerateFlashcardDto } from "./dtos/flashcard.types";
 
 @Injectable()
@@ -57,6 +57,48 @@ export class GeminiService {
             .filter((value): value is { mimeType: string; data: string } => value !== null);
 
         return { images, raw: data };
+    }
+
+    async generateWrongAnswers(dto: GenerateWrongAnswersDto) {
+        const { question, correctAnswer } = dto;
+        const promptTemplatePath = join(process.cwd(), "src", "integration", "gemini", "docs", "multiple-choice.md");
+        const promptTemplate = await readFile(promptTemplatePath, "utf-8");
+        const body = {
+            contents: [
+                {
+                    parts: [
+                        {
+                            text: `${promptTemplate}\n\nQuestion: ${question}\nCorrect Answer: ${correctAnswer}`,
+                        },
+                    ],
+                },
+            ],
+        };
+
+        const data = await geminiAPI.createGeminiContent(body);
+        const parts = data?.candidates?.[0]?.content?.parts ?? [];
+        const text = parts
+            .map((part: { text?: string }) => part.text)
+            .filter((value: string | undefined): value is string => Boolean(value))
+            .join("\n")
+            .trim();
+
+        try {
+            const jsonMatch = text.match(/\[[\s\S]*\]/);
+            if (jsonMatch) {
+                const parsed = JSON.parse(jsonMatch[0]);
+                if (Array.isArray(parsed) && parsed.length === 3) {
+                    return { wrongAnswers: parsed.map(String), raw: data };
+                }
+            }
+        } catch {}
+
+        const lines = text.split("\n").map(l => l.replace(/^\d+\.\s*/, "").replace(/^[-*]\s*/, "").trim()).filter(Boolean);
+        const wrongAnswers = lines.slice(0, 3);
+        while (wrongAnswers.length < 3) {
+            wrongAnswers.push("");
+        }
+        return { wrongAnswers, raw: data };
     }
 
     async generateFlashcard(dto: GenerateFlashcardDto) {
