@@ -1,13 +1,45 @@
-import { Injectable } from "@nestjs/common";
+import { Injectable, Optional } from "@nestjs/common";
 import { readFile } from "fs/promises";
 import { join } from "path";
 import { geminiAPI } from "@/helpers/gemini-api.helper";
 import { GenerateImageResult, GenerateTextResult, GeminiImageInput, GenerateWrongAnswersDto } from "./dtos";
 import { GenerateFlashcardDto } from "./dtos/flashcard.types";
+import { SystemConfigService } from "@/domains/system-config/system-config.service";
+import { NSSystemConfig } from "@/common/enums";
 
 @Injectable()
 export class GeminiService {
+    constructor(
+        @Optional()
+        private readonly systemConfigService?: SystemConfigService,
+    ) {}
+
+    private async getGeminiConfig() {
+        if (!this.systemConfigService) return undefined;
+        const codes = [
+            NSSystemConfig.GEMINI_MODEL,
+            NSSystemConfig.GEMINI_API_KEY,
+            NSSystemConfig.GEMINI_API_URL,
+            NSSystemConfig.GEMINI_FALLBACK_MODEL,
+        ];
+        const configs = await this.systemConfigService.list({ codes });
+        const configMap = new Map<string, string>();
+        for (const item of configs) {
+            configMap.set(item.code, item.value);
+        }
+
+        return {
+            model: configMap.get(NSSystemConfig.GEMINI_MODEL) || process.env.GEMINI_MODEL,
+            apiKey: configMap.get(NSSystemConfig.GEMINI_API_KEY) || process.env.GEMINI_API_KEY,
+            baseUrl: configMap.get(NSSystemConfig.GEMINI_API_URL) || process.env.GEMINI_API_URL,
+            fallbackModel: configMap.get(NSSystemConfig.GEMINI_FALLBACK_MODEL) || process.env.GEMINI_FALLBACK_MODEL,
+        };
+    }
+
+
+
     async generateText(prompt: string, images: GeminiImageInput[] = []) {
+        const config = await this.getGeminiConfig();
         const body = {
             contents: [
                 {
@@ -24,7 +56,7 @@ export class GeminiService {
             ],
         };
 
-        const data = await geminiAPI.createGeminiContent(body);
+        const data = await geminiAPI.createGeminiContent(body, config);
         const parts = data.candidates?.[0]?.content?.parts ?? [];
         const text = parts
             .map((part) => part.text)
@@ -35,6 +67,7 @@ export class GeminiService {
     }
 
     async generateImage(prompt: string) {
+        const config = await this.getGeminiConfig();
         const body = {
             contents: [{ parts: [{ text: prompt }] }],
             generationConfig: {
@@ -42,7 +75,7 @@ export class GeminiService {
             },
         };
 
-        const data = await geminiAPI.createGeminiContent(body);
+        const data = await geminiAPI.createGeminiContent(body, config);
         const parts = data.candidates?.[0]?.content?.parts ?? [];
 
         const images = parts
@@ -60,6 +93,7 @@ export class GeminiService {
     }
 
     async generateWrongAnswers(dto: GenerateWrongAnswersDto) {
+        const config = await this.getGeminiConfig();
         const { question, correctAnswer } = dto;
         const promptTemplatePath = join(process.cwd(), "src", "integration", "gemini", "docs", "multiple-choice.md");
         const promptTemplate = await readFile(promptTemplatePath, "utf-8");
@@ -75,7 +109,7 @@ export class GeminiService {
             ],
         };
 
-        const data = await geminiAPI.createGeminiContent(body);
+        const data = await geminiAPI.createGeminiContent(body, config);
         const parts = data?.candidates?.[0]?.content?.parts ?? [];
         const text = parts
             .map((part: { text?: string }) => part.text)
@@ -102,6 +136,7 @@ export class GeminiService {
     }
 
     async generateFlashcard(dto: GenerateFlashcardDto) {
+        const config = await this.getGeminiConfig();
         const { words, level } = dto;
         const promptTemplatePath = join(process.cwd(), "src", "integration", "gemini", "docs", "flashcard.md");
         const promptTemplate = await readFile(promptTemplatePath, "utf-8");
@@ -117,7 +152,7 @@ export class GeminiService {
             ],
         };
 
-        const data = await geminiAPI.createGeminiContent(body);
+        const data = await geminiAPI.createGeminiContent(body, config);
         const parts = data?.candidates?.[0]?.content?.parts ?? [];
         const text = parts
             .map((part: { text?: string }) => part.text)
