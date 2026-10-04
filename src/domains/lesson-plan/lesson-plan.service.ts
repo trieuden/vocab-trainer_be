@@ -1,12 +1,24 @@
 import { BadRequestException, Injectable, NotFoundException } from '@nestjs/common';
-import { CreateLessonPlanDto, FindLessonPlanDto, UpdateLessonPlanDto, SectionInputDto, MultipleChoiceQuestionDto, TaskQuestionType } from './dtos';
+import { CreateLessonPlanDto, FindLessonPlanDto, UpdateLessonPlanDto, SectionInputDto, TaskQuestionType } from './dtos';
 import { Transaction } from '@/core/decorators/transaction.decorator';
 import { WordRepo, LessonPlanRepo, GameRepo, TaskRepo, LessonPlanVocabRepo, LessonPlanGrammarRepo, LessonPlanListeningRepo, LessonPlanWritingRepo, LessonPlanWarmupRepo, QuestionRepo, AnswerRepo, TaskQuestionRepo, QuestionAnswerRepo } from '@/repositories';
-import { LessonPlanVocab, LessonPlanGrammar, LessonPlanListening, LessonPlanWriting, LessonPlanWarmup } from '@/entities';
+import { LessonPlanVocab, LessonPlanGrammar, LessonPlanListening, LessonPlanWriting, LessonPlanWarmup, Game, Task } from '@/entities';
 import { In } from 'typeorm';
 import { NSLessonPlan } from '@/common/enums';
-import { GameType } from '@/common/enums/EGame';
 import { QuestionType } from '@/common/enums/EQuestion';
+
+interface SectionReference {
+  refId?: string;
+  refType?: NSLessonPlan.ELessonPlanType;
+}
+
+interface FlattenedSectionMap {
+  vocab?: LessonPlanVocab;
+  grammar?: LessonPlanGrammar;
+  listening?: LessonPlanListening;
+  writing?: LessonPlanWriting;
+  warmup?: LessonPlanWarmup;
+}
 
 @Injectable()
 export class LessonPlanService {
@@ -26,25 +38,38 @@ export class LessonPlanService {
     private readonly questionAnswerRepo: QuestionAnswerRepo,
   ) {}
 
-  private async loadSections(lpIds: string[]) {
+  async find(dto: FindLessonPlanDto) {
+    const { pageSize, pageIndex } = dto;
+    const [data, total] = await this.repo.findAndCount({
+      select: {
+        id: true,
+        name: true,
+        level: true,
+        description: true,
+        userId: true,
+        createdAt: true,
+        updatedAt: true,
+        user: { id: true, name: true },
+      },
+      where: { isDeleted: false },
+      order: { createdAt: 'DESC' },
+      skip: (pageIndex ?? 1) - 1,
+      take: pageSize,
+      relations: { user: true },
+    });
+
+    const lpIds = data.map((lp) => lp.id);
+    const sectionSelect = { id: true, lessonPlanId: true, refId: true, refType: true };
+
     const [vocabs, grammars, listenings, writings, warmups] = await Promise.all([
-      lpIds.length ? this.vocabRepo.find({ where: { lessonPlanId: In(lpIds) } }) : [],
-      lpIds.length ? this.grammarRepo.find({ where: { lessonPlanId: In(lpIds) } }) : [],
-      lpIds.length ? this.listeningRepo.find({ where: { lessonPlanId: In(lpIds) } }) : [],
-      lpIds.length ? this.writingRepo.find({ where: { lessonPlanId: In(lpIds) } }) : [],
-      lpIds.length ? this.warmupRepo.find({ where: { lessonPlanId: In(lpIds) } }) : [],
+      lpIds.length ? this.vocabRepo.find({ where: { lessonPlanId: In(lpIds) }, select: sectionSelect }) : [],
+      lpIds.length ? this.grammarRepo.find({ where: { lessonPlanId: In(lpIds) }, select: sectionSelect }) : [],
+      lpIds.length ? this.listeningRepo.find({ where: { lessonPlanId: In(lpIds) }, select: sectionSelect }) : [],
+      lpIds.length ? this.writingRepo.find({ where: { lessonPlanId: In(lpIds) }, select: sectionSelect }) : [],
+      lpIds.length ? this.warmupRepo.find({ where: { lessonPlanId: In(lpIds) }, select: sectionSelect }) : [],
     ]);
 
-    const sectionMap = new Map<
-      string,
-      {
-        vocab?: LessonPlanVocab;
-        grammar?: LessonPlanGrammar;
-        listening?: LessonPlanListening;
-        writing?: LessonPlanWriting;
-        warmup?: LessonPlanWarmup;
-      }
-    >();
+    const sectionMap = new Map<string, FlattenedSectionMap>();
 
     for (const s of vocabs) {
       if (!sectionMap.has(s.lessonPlanId)) sectionMap.set(s.lessonPlanId, {});
@@ -67,130 +92,7 @@ export class LessonPlanService {
       sectionMap.get(s.lessonPlanId)!.warmup = s;
     }
 
-    return sectionMap;
-  }
-
-  private async resolveRef(refs: { refId?: string; refType?: NSLessonPlan.ELessonPlanType }[], withWords = false) {
-    const gameIds = refs.filter((r) => r.refType === NSLessonPlan.ELessonPlanType.GAME && r.refId).map((r) => r.refId!);
-    const taskIds = refs.filter((r) => r.refType === NSLessonPlan.ELessonPlanType.TASK && r.refId).map((r) => r.refId!);
-
-    const wordSelect = { id: true, words: true, definition: true, phoneticText: true, audio: true };
-
-    const [games, tasks] = await Promise.all([
-      gameIds.length
-        ? this.gameRepo.find({
-            where: { id: In(gameIds) },
-            ...(withWords ? { relations: { words: true }, select: { id: true, type: true, words: wordSelect } } : {}),
-          })
-        : [],
-      taskIds.length
-        ? this.taskRepo.find({
-            where: { id: In(taskIds) },
-            ...(withWords
-              ? {
-                  relations: {
-                    words: true,
-                    taskQuestions: {
-                      question: {
-                        questionAnswers: {
-                          answer: true,
-                        },
-                      },
-                    },
-                  },
-                  select: {
-                    id: true,
-                    name: true,
-                    words: wordSelect,
-                    taskQuestions: {
-                      id: true,
-                      question: {
-                        id: true,
-                        question: true,
-                        type: true,
-                        key: true,
-                        questionAnswers: {
-                          id: true,
-                          answer: {
-                            id: true,
-                            answer: true,
-                            isRight: true,
-                          },
-                        },
-                      },
-                    },
-                  },
-                }
-              : {}),
-          })
-        : [],
-    ]);
-
-    const gameMap = new Map<string, any>(games.map((g) => [g.id, g] as const));
-    const taskMap = new Map<string, any>(tasks.map((t) => [t.id, t] as const));
-
-    return (ref?: { refId?: string; refType?: NSLessonPlan.ELessonPlanType }) => {
-      if (!ref?.refId) return null;
-
-      if (ref.refType === NSLessonPlan.ELessonPlanType.GAME) {
-        return gameMap.get(ref.refId) ?? null;
-      }
-
-      const task = taskMap.get(ref.refId);
-      if (!task) return null;
-
-      if (withWords && task.taskQuestions?.length) {
-        task.questions = task.taskQuestions.map((tq: any) => ({
-          id: tq.question.id,
-          question: tq.question.question,
-          type: tq.question.type,
-          key: tq.question.key,
-          answers: (tq.question.questionAnswers ?? []).map((qa: any) => ({
-            id: qa.answer.id,
-            answer: qa.answer.answer,
-            isRight: qa.answer.isRight,
-          })),
-        }));
-      }
-
-      return task;
-    };
-  }
-
-  private flattenSections(lpId: string, sectionMap: Map<string, any>, resolve: (ref?: any) => any) {
-    const s = sectionMap.get(lpId);
-    if (!s) {
-      return { warmUp: null, warmUpType: null, vocab: null, vocabType: null, grammar: null, grammarType: null, listening: null, listeningType: null, writing: null, writingType: null };
-    }
-
-    return {
-      warmUp: resolve(s.warmup),
-      warmUpType: s.warmup?.refType ?? null,
-      vocab: resolve(s.vocab),
-      vocabType: s.vocab?.refType ?? null,
-      grammar: resolve(s.grammar),
-      grammarType: s.grammar?.refType ?? null,
-      listening: resolve(s.listening),
-      listeningType: s.listening?.refType ?? null,
-      writing: resolve(s.writing),
-      writingType: s.writing?.refType ?? null,
-    };
-  }
-
-  async find(dto: FindLessonPlanDto) {
-    const { pageSize, pageIndex } = dto;
-    const [data, total] = await this.repo.findAndCount({
-      where: { isDeleted: false },
-      order: { createdAt: 'DESC' },
-      skip: (pageIndex ?? 1) - 1,
-      take: pageSize,
-      relations: { user: true },
-    });
-
-    const lpIds = data.map((lp) => lp.id);
-    const sectionMap = await this.loadSections(lpIds);
-
-    const allRefs: { refId?: string; refType?: NSLessonPlan.ELessonPlanType }[] = [];
+    const allRefs: SectionReference[] = [];
     for (const sections of sectionMap.values()) {
       if (sections.warmup) allRefs.push(sections.warmup);
       if (sections.vocab) allRefs.push(sections.vocab);
@@ -198,31 +100,90 @@ export class LessonPlanService {
       if (sections.listening) allRefs.push(sections.listening);
       if (sections.writing) allRefs.push(sections.writing);
     }
-    const resolve = await this.resolveRef(allRefs);
 
-    const result = data.map((lp) => ({
-      ...lp,
-      ...this.flattenSections(lp.id, sectionMap, resolve),
-    }));
+    const gameIds = allRefs.filter((r) => r.refType === NSLessonPlan.ELessonPlanType.GAME && r.refId).map((r) => r.refId!);
+    const taskIds = allRefs.filter((r) => r.refType === NSLessonPlan.ELessonPlanType.TASK && r.refId).map((r) => r.refId!);
+
+    const [games, tasks] = await Promise.all([
+      gameIds.length
+        ? this.gameRepo.find({
+            where: { id: In(gameIds) },
+            select: { id: true, type: true },
+          })
+        : [],
+      taskIds.length
+        ? this.taskRepo.find({
+            where: { id: In(taskIds) },
+            select: { id: true, name: true },
+          })
+        : [],
+    ]);
+
+    const gameMap = new Map<string, Game>();
+    for (const g of games) {
+      gameMap.set(g.id, g);
+    }
+
+    const taskMap = new Map<string, Task>();
+    for (const t of tasks) {
+      taskMap.set(t.id, t);
+    }
+
+    const resolve = (ref?: SectionReference) => {
+      if (!ref?.refId) return null;
+      if (ref.refType === NSLessonPlan.ELessonPlanType.GAME) {
+        return gameMap.get(ref.refId) ?? null;
+      }
+      return taskMap.get(ref.refId) ?? null;
+    };
+
+    const result = data.map((lp) => {
+      const s = sectionMap.get(lp.id);
+      let flattenedSections;
+      if (!s) {
+        flattenedSections = { warmUp: null, warmUpType: null, vocab: null, vocabType: null, grammar: null, grammarType: null, listening: null, listeningType: null, writing: null, writingType: null };
+      } else {
+        flattenedSections = {
+          warmUp: resolve(s.warmup),
+          warmUpType: s.warmup?.refType ?? null,
+          vocab: resolve(s.vocab),
+          vocabType: s.vocab?.refType ?? null,
+          grammar: resolve(s.grammar),
+          grammarType: s.grammar?.refType ?? null,
+          listening: resolve(s.listening),
+          listeningType: s.listening?.refType ?? null,
+          writing: resolve(s.writing),
+          writingType: s.writing?.refType ?? null,
+        };
+      }
+      return {
+        ...lp,
+        ...flattenedSections,
+      };
+    });
 
     return { data: result, total };
   }
 
-  private async createSection(lessonPlanId: string, section?: SectionInputDto): Promise<{ refId: string; refType: NSLessonPlan.ELessonPlanType } | null> {
-    if (!section) return null;
+  private async handleSaveSection(
+    lessonPlanId: string,
+    input: SectionInputDto,
+    repo: LessonPlanWarmupRepo | LessonPlanVocabRepo | LessonPlanGrammarRepo | LessonPlanListeningRepo | LessonPlanWritingRepo,
+  ) {
+    let refId: string | undefined;
+    let refType: NSLessonPlan.ELessonPlanType | undefined;
 
-    if (section.refId && section.refType) {
-      return { refId: section.refId, refType: section.refType };
-    }
-
-    if (section.words?.length && section.gameType) {
+    if (input.refId && input.refType) {
+      refId = input.refId;
+      refType = input.refType;
+    } else if (input.words?.length && input.gameType) {
       const game = await this.gameRepo.save(
         this.gameRepo.create({
-          type: section.gameType,
-          parentId: undefined,
+          type: input.gameType,
         }),
       );
-      const words = section.words.map((w) =>
+
+      const words = input.words.map((w) =>
         this.wordRepo.create({
           words: w.word,
           audio: w.audio,
@@ -232,19 +193,18 @@ export class LessonPlanService {
         }),
       );
       await this.wordRepo.save(words);
-      return { refId: game.id, refType: NSLessonPlan.ELessonPlanType.GAME };
-    }
 
-    if (section.taskName) {
+      refId = game.id;
+      refType = NSLessonPlan.ELessonPlanType.GAME;
+    } else if (input.taskName) {
       const task = await this.taskRepo.save(
         this.taskRepo.create({
-          name: section.taskName,
-          parentId: undefined,
+          name: input.taskName,
         }),
       );
 
-      if (section.words?.length) {
-        const words = section.words.map((w) =>
+      if (input.words?.length) {
+        const words = input.words.map((w) =>
           this.wordRepo.create({
             words: w.word,
             audio: w.audio,
@@ -256,8 +216,8 @@ export class LessonPlanService {
         await this.wordRepo.save(words);
       }
 
-      if (section.taskType === TaskQuestionType.MULTIPLE_CHOICE && section.questions?.length) {
-        for (const q of section.questions) {
+      if (input.taskType === TaskQuestionType.MULTIPLE_CHOICE && input.questions?.length) {
+        for (const q of input.questions) {
           const answerGroupId = crypto.randomUUID();
 
           const correctAnswer = await this.answerRepo.save(
@@ -267,9 +227,7 @@ export class LessonPlanService {
           const wrongAnswers = (q.wrongAnswers ?? []).map((wa) =>
             this.answerRepo.create({ answer: wa, isRight: false }),
           );
-          const savedWrongAnswers = wrongAnswers.length
-            ? await this.answerRepo.save(wrongAnswers)
-            : [];
+          const savedWrongAnswers = wrongAnswers.length ? await this.answerRepo.save(wrongAnswers) : [];
 
           const question = await this.questionRepo.save(
             this.questionRepo.create({
@@ -298,15 +256,25 @@ export class LessonPlanService {
         }
       }
 
-      return { refId: task.id, refType: NSLessonPlan.ELessonPlanType.TASK };
+      refId = task.id;
+      refType = NSLessonPlan.ELessonPlanType.TASK;
     }
 
-    return null;
+    if (refId && refType) {
+      await repo.save(
+        repo.create({
+          lessonPlanId,
+          refId,
+          refType,
+        }),
+      );
+    }
   }
 
   @Transaction()
   async create(dto: CreateLessonPlanDto) {
     try {
+      // 1. Xử lý lưu thông tin chung giáo án (Tên, Cấp độ, Mô tả, Giáo viên)
       const lp = this.repo.create({
         name: dto.name,
         level: dto.level,
@@ -315,25 +283,29 @@ export class LessonPlanService {
       });
       const saved = await this.repo.save(lp);
 
-      const sections = [
-        { input: dto.warmUp, repo: this.warmupRepo },
-        { input: dto.vocab, repo: this.vocabRepo },
-        { input: dto.grammar, repo: this.grammarRepo },
-        { input: dto.listening, repo: this.listeningRepo },
-        { input: dto.writing, repo: this.writingRepo },
-      ];
+      // 2. Xử lý lưu phần mở đầu (Warm-up)
+      if (dto.warmUp) {
+        await this.handleSaveSection(saved.id, dto.warmUp, this.warmupRepo);
+      }
 
-      for (const { input, repo } of sections) {
-        const ref = await this.createSection(saved.id, input);
-        if (ref) {
-          await repo.save(
-            repo.create({
-              lessonPlanId: saved.id,
-              refId: ref.refId,
-              refType: ref.refType,
-            }),
-          );
-        }
+      // 3. Xử lý lưu phần từ vựng (Vocabulary)
+      if (dto.vocab) {
+        await this.handleSaveSection(saved.id, dto.vocab, this.vocabRepo);
+      }
+
+      // 4. Xử lý lưu phần ngữ pháp (Grammar)
+      if (dto.grammar) {
+        await this.handleSaveSection(saved.id, dto.grammar, this.grammarRepo);
+      }
+
+      // 5. Xử lý lưu phần nghe (Listening)
+      if (dto.listening) {
+        await this.handleSaveSection(saved.id, dto.listening, this.listeningRepo);
+      }
+
+      // 6. Xử lý lưu phần viết (Writing)
+      if (dto.writing) {
+        await this.handleSaveSection(saved.id, dto.writing, this.writingRepo);
       }
 
       return { message: 'Lesson plan created successfully', data: saved };
@@ -342,23 +314,60 @@ export class LessonPlanService {
     }
   }
 
+
   async getDetail(id: string) {
     const lessonPlan = await this.repo.findOne({
       where: { id, isDeleted: false },
       relations: { user: true },
       select: {
         id: true,
+        name: true,
         description: true,
         level: true,
+        createdAt: true,
+        updatedAt: true,
         user: { id: true, name: true },
       },
     });
     if (!lessonPlan) throw new NotFoundException('LessonPlan not found');
 
-    const sectionMap = await this.loadSections([id]);
+    const lpIds = [id];
+    const sectionSelect = { id: true, lessonPlanId: true, refId: true, refType: true };
+
+    const [vocabs, grammars, listenings, writings, warmups] = await Promise.all([
+      lpIds.length ? this.vocabRepo.find({ where: { lessonPlanId: In(lpIds) }, select: sectionSelect }) : [],
+      lpIds.length ? this.grammarRepo.find({ where: { lessonPlanId: In(lpIds) }, select: sectionSelect }) : [],
+      lpIds.length ? this.listeningRepo.find({ where: { lessonPlanId: In(lpIds) }, select: sectionSelect }) : [],
+      lpIds.length ? this.writingRepo.find({ where: { lessonPlanId: In(lpIds) }, select: sectionSelect }) : [],
+      lpIds.length ? this.warmupRepo.find({ where: { lessonPlanId: In(lpIds) }, select: sectionSelect }) : [],
+    ]);
+
+    const sectionMap = new Map<string, FlattenedSectionMap>();
+
+    for (const s of vocabs) {
+      if (!sectionMap.has(s.lessonPlanId)) sectionMap.set(s.lessonPlanId, {});
+      sectionMap.get(s.lessonPlanId)!.vocab = s;
+    }
+    for (const s of grammars) {
+      if (!sectionMap.has(s.lessonPlanId)) sectionMap.set(s.lessonPlanId, {});
+      sectionMap.get(s.lessonPlanId)!.grammar = s;
+    }
+    for (const s of listenings) {
+      if (!sectionMap.has(s.lessonPlanId)) sectionMap.set(s.lessonPlanId, {});
+      sectionMap.get(s.lessonPlanId)!.listening = s;
+    }
+    for (const s of writings) {
+      if (!sectionMap.has(s.lessonPlanId)) sectionMap.set(s.lessonPlanId, {});
+      sectionMap.get(s.lessonPlanId)!.writing = s;
+    }
+    for (const s of warmups) {
+      if (!sectionMap.has(s.lessonPlanId)) sectionMap.set(s.lessonPlanId, {});
+      sectionMap.get(s.lessonPlanId)!.warmup = s;
+    }
+
     const s = sectionMap.get(id);
 
-    const allRefs: { refId?: string; refType?: NSLessonPlan.ELessonPlanType }[] = [];
+    const allRefs: SectionReference[] = [];
     if (s) {
       if (s.warmup) allRefs.push(s.warmup);
       if (s.vocab) allRefs.push(s.vocab);
@@ -366,35 +375,152 @@ export class LessonPlanService {
       if (s.listening) allRefs.push(s.listening);
       if (s.writing) allRefs.push(s.writing);
     }
-    const resolve = await this.resolveRef(allRefs, true);
+    
+    const gameIds = allRefs.filter((r) => r.refType === NSLessonPlan.ELessonPlanType.GAME && r.refId).map((r) => r.refId!);
+    const taskIds = allRefs.filter((r) => r.refType === NSLessonPlan.ELessonPlanType.TASK && r.refId).map((r) => r.refId!);
+
+    const wordSelect = { id: true, words: true, definition: true, phoneticText: true, audio: true };
+
+    const [games, tasks] = await Promise.all([
+      gameIds.length
+        ? this.gameRepo.find({
+            where: { id: In(gameIds) },
+            relations: { words: true }, 
+            select: { id: true, type: true, words: wordSelect },
+          })
+        : [],
+      taskIds.length
+        ? this.taskRepo.find({
+            where: { id: In(taskIds) },
+            relations: {
+              words: true,
+              taskQuestions: {
+                question: {
+                  questionAnswers: {
+                    answer: true,
+                  },
+                },
+              },
+            },
+            select: {
+              id: true,
+              name: true,
+              words: wordSelect,
+              taskQuestions: {
+                id: true,
+                question: {
+                  id: true,
+                  question: true,
+                  type: true,
+                  key: true,
+                  questionAnswers: {
+                    id: true,
+                    answer: {
+                      id: true,
+                      answer: true,
+                      isRight: true,
+                    },
+                  },
+                },
+              },
+            },
+          })
+        : [],
+    ]);
+
+    const gameMap = new Map<string, Game>();
+    for (const g of games) {
+      gameMap.set(g.id, g);
+    }
+
+    const taskMap = new Map<string, Task>();
+    for (const t of tasks) {
+      taskMap.set(t.id, t);
+    }
+
+    const resolve = (ref?: SectionReference) => {
+      if (!ref?.refId) return null;
+
+      if (ref.refType === NSLessonPlan.ELessonPlanType.GAME) {
+        return gameMap.get(ref.refId) ?? null;
+      }
+
+      const task = taskMap.get(ref.refId);
+      if (!task) return null;
+
+      if (task.taskQuestions?.length) {
+        const questions = task.taskQuestions.map((tq) => ({
+          id: tq.question?.id,
+          question: tq.question?.question,
+          type: tq.question?.type,
+          key: tq.question?.key,
+          answers: (tq.question?.questionAnswers ?? []).map((qa) => ({
+            id: qa.answer?.id,
+            answer: qa.answer?.answer,
+            isRight: qa.answer?.isRight,
+          })),
+        }));
+        return {
+          ...task,
+          questions,
+        };
+      }
+
+      return task;
+    };
+    
+    let flattenedSections;
+    if (!s) {
+      flattenedSections = { warmUp: null, warmUpType: null, vocab: null, vocabType: null, grammar: null, grammarType: null, listening: null, listeningType: null, writing: null, writingType: null };
+    } else {
+      flattenedSections = {
+        warmUp: resolve(s.warmup),
+        warmUpType: s.warmup?.refType ?? null,
+        vocab: resolve(s.vocab),
+        vocabType: s.vocab?.refType ?? null,
+        grammar: resolve(s.grammar),
+        grammarType: s.grammar?.refType ?? null,
+        listening: resolve(s.listening),
+        listeningType: s.listening?.refType ?? null,
+        writing: resolve(s.writing),
+        writingType: s.writing?.refType ?? null,
+      };
+    }
 
     return {
       ...lessonPlan,
-      ...this.flattenSections(id, sectionMap, resolve),
+      ...flattenedSections,
     };
   }
 
   @Transaction()
-  async update(id: string, dto: UpdateLessonPlanDto) {
-    const e = await this.repo.findOne({ where: { id, isDeleted: false } });
+  async update(dto: UpdateLessonPlanDto) {
+    const e = await this.repo.findOne({
+      where: { id: dto.id, isDeleted: false },
+      select: { id: true, level: true, description: true, name: true },
+    });
     if (!e) throw new NotFoundException('LessonPlan not found');
 
     if (dto.level !== undefined) e.level = dto.level;
     if (dto.description !== undefined) e.description = dto.description;
+    if (dto.name !== undefined) e.name = dto.name;
     await this.repo.save(e);
 
     const upsertSection = async (
       repo: LessonPlanVocabRepo | LessonPlanGrammarRepo | LessonPlanListeningRepo | LessonPlanWritingRepo | LessonPlanWarmupRepo,
       sectionDto?: { refId?: string; refType?: NSLessonPlan.ELessonPlanType },
     ) => {
-      const existing = await repo.find({ where: { lessonPlanId: id } });
+      const existing = await repo.find({
+        where: { lessonPlanId: dto.id },
+        select: { id: true, lessonPlanId: true },
+      });
       if (existing.length) {
         await repo.remove(existing);
       }
       if (sectionDto?.refId) {
         await repo.save(
           repo.create({
-            lessonPlanId: id,
+            lessonPlanId: dto.id,
             refId: sectionDto.refId,
             refType: sectionDto.refType,
           }),
@@ -412,14 +538,21 @@ export class LessonPlanService {
       ].filter(Boolean),
     );
 
-    return this.repo.findOne({ where: { id } });
+    return this.repo.findOne({
+      where: { id: dto.id, isDeleted: false },
+      select: { id: true, name: true, level: true, description: true, updatedAt: true },
+    });
   }
 
   @Transaction()
   async remove(id: string) {
-    const e = await this.repo.findOne({ where: { id, isDeleted: false } });
+    const e = await this.repo.findOne({
+      where: { id, isDeleted: false },
+      select: { id: true, isDeleted: true },
+    });
     if (!e) throw new NotFoundException('LessonPlan not found');
     e.isDeleted = true;
     await this.repo.save(e);
+    return { success: true };
   }
 }

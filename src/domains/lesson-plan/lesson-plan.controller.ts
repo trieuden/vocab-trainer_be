@@ -3,8 +3,8 @@ import {
   Controller,
   Delete,
   Param,
-  Patch,
   Post,
+  Put,
 } from "@nestjs/common";
 import { ApiBearerAuth, ApiOperation, ApiTags } from "@nestjs/swagger";
 import { LessonPlanService } from "./lesson-plan.service";
@@ -17,31 +17,31 @@ export class LessonPlanController {
   constructor(private readonly service: LessonPlanService) {}
 
   @Post("list")
-  @ApiOperation({ summary: "Danh sách" })
+  @ApiOperation({ summary: "Danh sách giáo án" })
   find(@Body() dto: FindLessonPlanDto) {
     return this.service.find(dto);
   }
 
   @Post()
+  @ApiOperation({ summary: "Tạo giáo án" })
   create(@Body() dto: CreateLessonPlanDto) {
     return this.service.create(dto);
   }
 
   @Post("detail")
-  @ApiOperation({ summary: "Chi tiết" })
+  @ApiOperation({ summary: "Chi tiết giáo án" })
   getDetail(@Body() dto: GetDetailDto) {
     return this.service.getDetail(dto.id);
   }
 
-  @Patch(":id")
-  update(
-    @Param("id") id: string,
-    @Body() dto: UpdateLessonPlanDto,
-  ) {
-    return this.service.update(id, dto);
+  @Put("update")
+  @ApiOperation({ summary: "Cập nhật giáo án" })
+  update(@Body() dto: UpdateLessonPlanDto) {
+    return this.service.update(dto);
   }
 
   @Delete(":id")
+  @ApiOperation({ summary: "Xóa giáo án" })
   remove(@Param("id") id: string) {
     return this.service.remove(id);
   }
