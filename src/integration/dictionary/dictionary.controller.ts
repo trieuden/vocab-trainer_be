@@ -1,16 +1,16 @@
 import { Body, Controller, Post } from "@nestjs/common";
 import { ApiBearerAuth, ApiOperation, ApiTags } from "@nestjs/swagger";
-import type { DefineWordsDto, SuggestWordsDto } from "./dtos";
+import { DefineWordsDto, SuggestWordsDto } from "./dtos";
 import { DictionaryService } from "./dictionary.service";
 
 @ApiBearerAuth("JWT-auth")
-@ApiTags("Integration - Dictionary API")
+@ApiTags("Integration - Dictionary")
 @Controller("integration/dictionary")
 export class DictionaryController {
   constructor(private readonly dictionaryService: DictionaryService) {}
 
   @Post("define-words")
-  @ApiOperation({ summary: "Get definitions from Dictionary API" })
+  @ApiOperation({ summary: "Define words via Gemini AI" })
   defineWords(@Body() body: DefineWordsDto) {
     return this.dictionaryService.defineWords(body);
   }

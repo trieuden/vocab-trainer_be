@@ -4,3 +4,5 @@ export * from "./EGame";
 export * from "./EQuestion";
 export * from "./ETask";
 export * from "./ESystemConfig";
+export * from "./EGemini";
+

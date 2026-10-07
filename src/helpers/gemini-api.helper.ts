@@ -30,7 +30,11 @@ export class GeminiApiHelper {
         const primaryUrl = this.buildApiUrl(baseUrl, model, apiKey);
 
         try {
-            return await callApiHelper.callApi({ apiUrl: primaryUrl, body: data });
+            return await callApiHelper.callApi({
+                apiUrl: primaryUrl,
+                body: data,
+                maxRetries: fallbackModel ? 1 : 3,
+            });
         } catch (error) {
             if (!fallbackModel || !this.isRetriableRateOrUnavailableError(error)) {
                 throw error;

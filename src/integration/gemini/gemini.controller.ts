@@ -1,7 +1,8 @@
 import { Body, Controller, Post } from "@nestjs/common";
 import { ApiBearerAuth, ApiOperation, ApiTags } from "@nestjs/swagger";
 import { GeminiService } from "./gemini.service";
-import type { GenerateImageDto, GenerateTextDto, GenerateFlashcardDto, GenerateWrongAnswersDto } from "./dtos";
+import { GenerateFlashcardDto, GetTokenUsageDto } from "./dtos";
+import type { GenerateImageDto, GenerateTextDto, GenerateWrongAnswersDto } from "./dtos";
 
 @ApiBearerAuth("JWT-auth")
 @ApiTags("Integration - Gemini")
@@ -31,6 +32,12 @@ export class GeminiController {
   @ApiOperation({ summary: "Generate 3 wrong answers for multiple choice" })
   generateWrongAnswers(@Body() body: GenerateWrongAnswersDto) {
     return this.geminiService.generateWrongAnswers(body);
+  }
+
+  @Post("token-usage")
+  @ApiOperation({ summary: "Get Gemini token usage statistics and quota reset countdown" })
+  tokenUsage(@Body() body: GetTokenUsageDto) {
+    return this.geminiService.getTokenUsage(body);
   }
 }
 

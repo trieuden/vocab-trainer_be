@@ -8,7 +8,8 @@ export class CallApiHelper {
     }
 
     async callApi(dto: CallApiDto): Promise<any> {
-        for (let attempt = 0; attempt <= this.maxRetries; attempt++) {
+        const maxRetries = dto.maxRetries ?? this.maxRetries;
+        for (let attempt = 0; attempt <= maxRetries; attempt++) {
             const response = await fetch(dto.apiUrl, {
                 method: "POST",
                 headers: {
@@ -22,7 +23,7 @@ export class CallApiHelper {
             if (!response.ok) {
                 const errorText = await response.text();
                 const isRetriable = response.status === 429 || response.status === 503;
-                const isLastAttempt = attempt === this.maxRetries;
+                const isLastAttempt = attempt === maxRetries;
 
                 if (isRetriable && !isLastAttempt) {
                     const backoffMs = 1000 * 2 ** attempt;

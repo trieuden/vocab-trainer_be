@@ -18,4 +18,6 @@ export * from "./lesson-plan-listening.entity";
 export * from "./lesson-plan-writing.entity";
 export * from "./lesson-plan-warmup.entity";
 export * from "./system-config.entity";
+export * from "./gemini-token-usage.entity";
+
 
